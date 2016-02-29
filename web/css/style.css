@@ -1,0 +1,58 @@
+/* Dropable list */
+ul.dropable {
+    border: 1px solid #ccc;
+    min-height: 20px;
+    padding-top: 10px;
+    border-radius: 10px;
+}
+
+ul.dropable li > p {
+    padding: 5px;
+    background-color: #fff;
+    border-radius: 10px;
+    display: table;
+    table-layout: fixed;
+    width: 100%;
+}
+
+ul.dropable li > p span.user-info {
+    float: left;
+}
+
+ul.dropable .user-info > span {
+    padding: 0 10px;
+    font-size: 16px;
+    border-right: 1px dotted #337ab7;
+}
+
+ul.dropable .user-info > span:last-child {
+    border: none;
+}
+
+ul.dropable span.title {
+    font-size: 14px;
+}
+
+ul.dropable span.title,
+ul.dropable span.left {
+    width: 48%;
+}
+
+ul.dropable span.left {
+    padding: 0 20px;
+}
+
+ul.dropable li > p span {
+    display: table-cell;
+    vertical-align: middle;
+    float: none;
+}
+
+.glyphicon-option-vertical {
+    cursor: move;
+}
+
+/* Navigation */
+ul.navbar-nav > li > form {
+    padding: 8px 0;
+}
