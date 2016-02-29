@@ -21,9 +21,8 @@ class TaskController extends \yii\web\Controller
                 'only' => ['update'],
                 'rules' => [
                     [
-                        'allow' => false,
-                        'actions' => ['update'],
-                        'roles' => ['?'],
+                        'allow' => true,
+                        'roles' => ['@'],
                     ],
                 ],
             ],
