@@ -5,7 +5,7 @@ namespace app\controllers;
 use Yii;
 use Yii\web\Request;
 use app\models\Tasks;
-use app\models\Users;
+use app\models\BcUsers;
 use app\models\Projects;
 use yii\filters\AccessControl;
 
@@ -86,14 +86,14 @@ class TaskController extends \yii\web\Controller
      * */
     private function getUsers()
     {
-        $arUsers    = Users::find()->all();
+        $arUsers    = BcUsers::find()->all();
         $result     = array();
 
         foreach ($arUsers as $user) {
             $result[] = array(
                 "id" => $user->id,
-                "username" => $user->username,
-                "email" => $user->email,
+                "username" => $user->login,
+                "email" => $user->bc_email,
                 "firstname" => $user->firstname,
                 "lastname" => $user->lastname,
             );

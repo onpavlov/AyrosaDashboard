@@ -34,6 +34,7 @@ AppAsset::register($this);
         $menuItems[] = ['label' => 'Зарегистрироваться', 'url' => ['/site/signup']];
         $menuItems[] = ['label' => 'Войти', 'url' => ['/site/login']];
     } else {
+        $menuItems[] = '<li>' . Html::label(Yii::$app->user->identity->firstname . ' ' . Yii::$app->user->identity->lastname, null, ['class' => 'username']) . '</li>';
         $menuItems[] = '<li>'
             . Html::beginForm(['/site/logout'], 'post')
             . Html::submitButton(

@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use yii\filters\AccessControl;
 use Yii;
+use app\models\BcUsers;
 
 class ToolsController extends \yii\web\Controller
 {
@@ -37,8 +38,13 @@ class ToolsController extends \yii\web\Controller
 
     public function actionParse()
     {
-        header("Content-Type: text/xml");
-        echo $this->getPeople();
+        $item = Yii::$app->request->get("item");
+
+        switch($item) {
+            case "users":
+                echo json_encode($this->updateUsers($this->getPeople()));
+                break;
+        }
     }
 
     private function getXML($url)
@@ -67,7 +73,61 @@ class ToolsController extends \yii\web\Controller
 
     private function getPeople()
     {
-        return $this->getXML(self::BASECAMP_URL . self::ACTION_PEOPLE);
+        $xml = new \SimpleXMLElement($this->getXML(self::BASECAMP_URL . self::ACTION_PEOPLE));
+        return $xml;
+    }
+
+    private function updateUsers($xmlObject)
+    {
+        $result = array();
+
+        foreach ($xmlObject as $person) {
+            $users = new BcUsers();
+            $id = (int) $person->{"id"};
+
+            /* Проверяем новый пользователь или нет */
+            if ($users->findOne(["bc_user_id" => $id]))
+                $users->setIsNewRecord(false);
+            else
+                $users->setIsNewRecord(true);
+
+            $users->bc_user_id  = (int) $person->{"id"};
+            $users->login       = (string) $person->{"email-address"};
+            $users->firstname   = (string) $person->{"first-name"};
+            $users->lastname    = (string) $person->{"last-name"};
+            $users->bc_email    = (string) $person->{"email-address"};
+            $users->bc_avatar   = (string) $person->{"avatar-url"};
+
+            if ($users->save()) {
+                if (($users->getIsNewRecord())) {
+                    $result[] = array(
+                        "status" => "success",
+                        "message" => "Добавлен пользователь " . (string) $person->{"first-name"} . " " . (string) $person->{"last-name"}
+                    );
+                } else {
+                    $result[] = array(
+                        "status" => "success",
+                        "message" => "Данные пользователя " . (string) $person->{"first-name"} . " " . (string) $person->{"last-name"} . " обновлены"
+                    );
+                }
+            } else {
+                if (($users->getIsNewRecord())) {
+                    $result[] = array(
+                        "status" => "success",
+                        "message" => "Ошибка добавления данных пользователя " . (string) $person->{"first-name"} . " " . (string) $person->{"last-name"}
+                    );
+                } else {
+                    $result[] = array(
+                        "status" => "success",
+                        "message" => "Ошибка обновления данных пользователя " . (string) $person->{"first-name"} . " " . (string) $person->{"last-name"}
+                    );
+                }
+            }
+
+            unset($users);
+        }
+
+        return $result;
     }
 
 }

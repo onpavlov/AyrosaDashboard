@@ -5,22 +5,22 @@ namespace app\models;
 use Yii;
 
 /**
- * This is the model class for table "tasks_users".
+ * This is the model class for table "tasks_bc_users".
  *
  * @property integer $tasks_id
- * @property integer $users_id
+ * @property integer $bc_users_id
  *
- * @property Users $users
+ * @property BcUsers $bcUsers
  * @property Tasks $tasks
  */
-class UsersTasks extends \yii\db\ActiveRecord
+class TasksBcUsers extends \yii\db\ActiveRecord
 {
     /**
      * @inheritdoc
      */
     public static function tableName()
     {
-        return 'tasks_users';
+        return 'tasks_bc_users';
     }
 
     /**
@@ -29,8 +29,8 @@ class UsersTasks extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['tasks_id', 'users_id'], 'required'],
-            [['tasks_id', 'users_id'], 'integer']
+            [['tasks_id', 'bc_users_id'], 'required'],
+            [['tasks_id', 'bc_users_id'], 'integer']
         ];
     }
 
@@ -41,16 +41,16 @@ class UsersTasks extends \yii\db\ActiveRecord
     {
         return [
             'tasks_id' => 'Tasks ID',
-            'users_id' => 'Users ID',
+            'bc_users_id' => 'Bc Users ID',
         ];
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getUsers()
+    public function getBcUsers()
     {
-        return $this->hasOne(Users::className(), ['id' => 'users_id']);
+        return $this->hasOne(BcUsers::className(), ['id' => 'bc_users_id']);
     }
 
     /**

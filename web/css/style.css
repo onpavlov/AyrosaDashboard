@@ -56,3 +56,9 @@ ul.dropable li > p span {
 ul.navbar-nav > li > form {
     padding: 8px 0;
 }
+
+label.username {
+    padding: 15px 0;
+    color: #fff;
+    margin: 0;
+}

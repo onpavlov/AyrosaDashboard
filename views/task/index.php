@@ -12,7 +12,7 @@
                 <option value="0">Ответственный</option>
                 <? foreach ($filter["users"] as $user):?>
                     <option value="<?=$user["id"]?>">
-                        <?=(empty($user["firstname"]) || empty($user["lastname"])) ? $user["username"] : $user["firstname"] . " " . $user["lastname"]?>
+                        <?=(!empty($user["firstname"]) || !empty($user["lastname"])) ? $user["firstname"] . " " . $user["lastname"] : $user["username"]?>
                     </option>
                 <?endforeach;?>
             </select>
