@@ -29,95 +29,26 @@ class TaskController extends \yii\web\Controller
         ];
     }
 
-    public function actionIndex($filter = "")
+    public function actionIndex($filter = array())
     {
-        if (empty($filter)) {
-            $tasks = Tasks::find()->orderBy("sort")->all();
-        }
+        $tasks      = new Tasks();
+        $users      = new BcUsers();
+        $projects   = new Projects();
 
-        $arTasks = array(
-            "high" => array(),
-            "middle" => array(),
-            "low" => array(),
-        );
-        $arFilter["users"] = $this->getUsers();
-        $arFilter["projects"] = $this->getProjects();
-
-        foreach ($tasks as $task) {
-            $project = $task->project;
-            $users   = $task->users;
-
-            $arTasks[$task->priority][] = array(
-                "id" => $task->id,
-                "project" => $project->project_name,
-                "project_url" => $project->link,
-                "name" => $task->task_name,
-                "sort" => $task->sort,
-                "task_url" => $task->link,
-                "date" => Yii::$app->formatter->asDate($task->date, 'php:d-m-Y'),
-                "user" => $users[0]->username
-            );
-        }
+        $arTasks = $tasks->getTasks($filter);
+        $arFilter["users"] = $users->getUsers();
+        $arFilter["projects"] = $projects->getProjects();
 
         return $this->render("index", array("tasks" => $arTasks, "filter" => $arFilter));
     }
 
     public function actionUpdate()
     {
+        $tasks = new Tasks();
         $r = new Request();
         $updateData = $r->post();
-        $i = 0;
 
-        foreach ($updateData["sort"] as $priority => $sort) {
-            natsort($sort);
-
-            if (!empty($sort))
-                foreach ($sort as $s) {
-                    $id = $updateData["id"][$i];
-
-                    Tasks::updateAll(array("priority" => $priority, "sort" => $s * 1), "id = $id");
-                    $i++;
-                }
-        }
-    }
-
-    /*
-     * Возвращает список всех пользователей
-     * */
-    private function getUsers()
-    {
-        $arUsers    = BcUsers::find()->all();
-        $result     = array();
-
-        foreach ($arUsers as $user) {
-            $result[] = array(
-                "id" => $user->id,
-                "username" => $user->login,
-                "email" => $user->bc_email,
-                "firstname" => $user->firstname,
-                "lastname" => $user->lastname,
-            );
-        }
-
-        return $result;
-    }
-
-    /*
-     * Возвращает список всех проектов
-     * */
-    private function getProjects()
-    {
-        $arUsers    = Projects::find()->all();
-        $result     = array();
-
-        foreach ($arUsers as $user) {
-            $result[] = array(
-                "id" => $user->id,
-                "project_name" => $user->project_name,
-            );
-        }
-
-        return $result;
+        $tasks->updateSort($updateData);
     }
 
 }

@@ -5,9 +5,25 @@
 
 <div class="container-fluid">
     <div class="row" style="margin-bottom: 20px">
+        <div class="col-md-12">
+            <div class="progress" style="display: none">
+                <div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: 0%;">
+                    0%
+                </div>
+            </div>
+        </div>
         <div class="col-md-4" style="margin-top: 40px">
-            <button type="button" class="btn btn-primary btn-lg btn-block parse_users">Обновить пользователей</button>
-            <button type="button" class="btn btn-primary btn-lg btn-block parse_tasks">Обновить задачи</button>
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="item[]" value="users">
+                    Обновить данные пользователей
+                </label>
+                <label>
+                    <input type="checkbox" name="item[]" value="projects">
+                    Обновить данные проектов и задач
+                </label>
+            </div>
+            <button type="button" class="btn btn-primary btn-lg btn-block parse_data" style="margin-top: 40px">Обновить данные</button>
         </div>
         <div class="col-md-8">
             <div class="col-md-8 col-md-offset-2"><h3 style="text-align: center">Результат</h3></div>

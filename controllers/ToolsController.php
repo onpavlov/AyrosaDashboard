@@ -2,17 +2,22 @@
 
 namespace app\controllers;
 
-use yii\filters\AccessControl;
 use Yii;
+use yii\filters\AccessControl;
+use app\models\Tasks;
 use app\models\BcUsers;
+use app\models\Projects;
+use app\components\Curl;
 
 class ToolsController extends \yii\web\Controller
 {
-    const BASECAMP_URL = "https://ayrosa.basecamphq.com/";
-    const ACTION_PROJECTS = "projects.xml";
-    const ACTION_PEOPLE = "people.xml";
+    const ACTION_PROJECTS   = "projects.xml";
+    const ACTION_PEOPLE     = "people.xml";
+    const ACTION_TODO       = "todo_lists.xml";
+    const ACTION_ITEMS      = "todo_items.xml";
 
-    public $layout = "dashboard";
+    public $layout  = "dashboard";
+    private $result = array();
 
     public function behaviors()
     {
@@ -36,17 +41,50 @@ class ToolsController extends \yii\web\Controller
         return $this->render('index');
     }
 
-    public function actionParse()
+    /*
+     * Обновляет различные xml данные в зависимости от переданного GET параметра item
+     * @return json
+     * */
+    public function actionUpdate()
     {
-        $item = Yii::$app->request->get("item");
+        $action = Yii::$app->request->get("action");
+        $params = Yii::$app->request->get("params");
 
-        switch($item) {
-            case "users":
-                echo json_encode($this->updateUsers($this->getPeople()));
+        switch($action) {
+            case "usersUpdate":
+                $users = new BcUsers();
+
+                $this->result = $users->updateUsers($this->getPeople());
+                break;
+
+            case "projectsUpdate":
+                $projects = new Projects();
+
+                $this->result = $projects->updateProjects($this->getProjects());
+                break;
+
+            case "taskUpdate":
+                $this->result = $this->updateTask($params);
                 break;
         }
+
+        echo json_encode($this->result);
     }
 
+    /*
+     * Возвращает json массив с идентификаторами объектов
+     * @return json
+     * */
+    public function actionProjects()
+    {
+        $projects = new Projects();
+        echo json_encode($projects->getProjectsIds());
+    }
+
+    /*
+     * Получает xml данные при помощи CURL
+     * @return string
+     * */
     private function getXML($url)
     {
         $headers = array(
@@ -54,77 +92,90 @@ class ToolsController extends \yii\web\Controller
             "Content-Type: application/xml"
         );
 
-        $ch = curl_init($url);
+        $config = array(
+            "ssl_verifypeer" => 0,
+            "ssl_verifyhost" => 0,
+            "header" => 0,
+            "timeout" => 30,
+            "httpheader" => $headers,
+            "returntransfer" => true,
+            "useragent" => "Ayrosa (4pavlovon@gmail.com)",
+            "userpwd" => Yii::$app->params["BClogin"] . ":" . Yii::$app->params["BCpassword"]
+        );
 
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, "Ayrosa (4pavlovon@gmail.com)");
-        curl_setopt($ch, CURLOPT_USERPWD, Yii::$app->params["BClogin"] . ":" . Yii::$app->params["BCpassword"]);
+        $curl = new Curl($url, $config);
 
-        $result = curl_exec($ch);
-        curl_close($ch);
-
-        return $result;
+        return $curl->execute();
     }
 
+    /*
+     * Получает xml данные со списком всех пользователей и возвращает объект для извлечения параметров
+     * @return SimpleXMLElement object
+     * */
     private function getPeople()
     {
-        $xml = new \SimpleXMLElement($this->getXML(self::BASECAMP_URL . self::ACTION_PEOPLE));
+        $xml = new \SimpleXMLElement($this->getXML(Yii::$app->params["BChost"] . self::ACTION_PEOPLE));
         return $xml;
     }
 
-    private function updateUsers($xmlObject)
+    /*
+     * Получает xml данные со списком всех проектов и возвращает объект для извлечения параметров
+     * @return SimpleXMLElement object
+     * */
+    private function getProjects()
     {
+        $xml = new \SimpleXMLElement($this->getXML(Yii::$app->params["BChost"] . self::ACTION_PROJECTS));
+        return $xml;
+    }
+
+    /*
+     * Получает xml данные со списком типов задач и возвращает объект для извлечения параметров
+     * @param integer $id ID проекта
+     * @return SimpleXMLElement object
+     * */
+    private function getTaskType($id)
+    {
+        $xml = new \SimpleXMLElement($this->getXML(Yii::$app->params["BChost"] . "projects/" . $id . "/" . self::ACTION_TODO));
+        return $xml;
+    }
+
+    /*
+     * Получает xml данные со списком задач и возвращает объект для извлечения параметров
+     * @param integer $id ID типа задачи
+     * @return SimpleXMLElement object
+     * */
+    private function getTasks($id)
+    {
+        $xml = new \SimpleXMLElement($this->getXML(Yii::$app->params["BChost"] . "todo_lists/" . $id . "/" . self::ACTION_ITEMS));
+        return $xml;
+    }
+
+    /*
+     * Выбирает задачи соответствующие проекту и записывает в таблицу tasks
+     * */
+
+    private function updateTask($project_id)
+    {
+        $tasks  = new Tasks();
         $result = array();
 
-        foreach ($xmlObject as $person) {
-            $users = new BcUsers();
-            $id = (int) $person->{"id"};
+        $project = Projects::findOne($project_id);
+        $typesXml = $this->getTaskType($project->bc_project_id);
 
-            /* Проверяем новый пользователь или нет */
-            if ($users->findOne(["bc_user_id" => $id]))
-                $users->setIsNewRecord(false);
-            else
-                $users->setIsNewRecord(true);
+        foreach ($typesXml->{"todo-list"} as $type) {
+            $typeId     = (int) $type->id;
+            $tasksXml   = $this->getTasks($typeId);
 
-            $users->bc_user_id  = (int) $person->{"id"};
-            $users->login       = (string) $person->{"email-address"};
-            $users->firstname   = (string) $person->{"first-name"};
-            $users->lastname    = (string) $person->{"last-name"};
-            $users->bc_email    = (string) $person->{"email-address"};
-            $users->bc_avatar   = (string) $person->{"avatar-url"};
-
-            if ($users->save()) {
-                if (($users->getIsNewRecord())) {
-                    $result[] = array(
-                        "status" => "success",
-                        "message" => "Добавлен пользователь " . (string) $person->{"first-name"} . " " . (string) $person->{"last-name"}
-                    );
-                } else {
-                    $result[] = array(
-                        "status" => "success",
-                        "message" => "Данные пользователя " . (string) $person->{"first-name"} . " " . (string) $person->{"last-name"} . " обновлены"
-                    );
-                }
-            } else {
-                if (($users->getIsNewRecord())) {
-                    $result[] = array(
-                        "status" => "success",
-                        "message" => "Ошибка добавления данных пользователя " . (string) $person->{"first-name"} . " " . (string) $person->{"last-name"}
-                    );
-                } else {
-                    $result[] = array(
-                        "status" => "success",
-                        "message" => "Ошибка обновления данных пользователя " . (string) $person->{"first-name"} . " " . (string) $person->{"last-name"}
-                    );
-                }
+            foreach ($tasksXml->{"todo-item"} as $task) {
+                $result = array_merge($result, $tasks->saveTask($task, $type, $project));
             }
+        }
 
-            unset($users);
+        if (empty($result)) {
+            $result[] = array(
+                "status" => "success",
+                "message" => "Задачи проекта " . $project->project_name . " успешно обновлены!"
+            );
         }
 
         return $result;

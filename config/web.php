@@ -52,6 +52,10 @@ $config = [
                 'tools' => 'tools/index',
             ],
         ],
+
+        'curl' => [
+            'class' => 'app\components\Curl'
+        ]
         
     ],
     'params' => $params,

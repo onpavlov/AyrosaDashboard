@@ -72,4 +72,58 @@ class BcUsers extends \yii\db\ActiveRecord
     {
         return $this->hasMany(Tasks::className(), ['id' => 'tasks_id'])->viaTable('tasks_bc_users', ['bc_users_id' => 'id']);
     }
+
+    /*
+     * Возвращает список всех пользователей
+     * @return array
+     * */
+    public function getUsers()
+    {
+        return $this->find()->all();
+    }
+
+    /*
+     * Выбирает необходимые данные из xml объекта и записывает в таблицу bc_users
+     * */
+    public function updateUsers(\SimpleXMLElement $xmlObject)
+    {
+        foreach ($xmlObject as $person) {
+            $id         = (int) $person->id;
+            $result     = array();
+
+            $users      = ($this->findOne(["bc_user_id" => $id])) ? $this->findOne(["bc_user_id" => $id]) : new BcUsers();
+
+            $users->bc_user_id  = $id;
+            $users->login       = (string) $person->{"email-address"};
+            $users->firstname   = (string) $person->{"first-name"};
+            $users->lastname    = (string) $person->{"last-name"};
+            $users->bc_email    = (string) $person->{"email-address"};
+            $users->bc_avatar   = (string) $person->{"avatar-url"};
+
+            if (!$users->save()) {
+                if (($users->getIsNewRecord())) {
+                    $result[] = array(
+                        "status" => "error",
+                        "message" => "Ошибка добавления данных пользователя " . (string) $person->{"first-name"} . " " . (string) $person->{"last-name"}
+                    );
+                } else {
+                    $result[] = array(
+                        "status" => "error",
+                        "message" => "Ошибка обновления данных пользователя " . (string) $person->{"first-name"} . " " . (string) $person->{"last-name"}
+                    );
+                }
+            }
+
+            unset($users);
+        }
+
+        if (empty($result)) {
+            $result[] = array(
+                "status" => "success",
+                "message" => "Данные пользователей успешно обновлены!"
+            );
+        }
+
+        return $result;
+    }
 }

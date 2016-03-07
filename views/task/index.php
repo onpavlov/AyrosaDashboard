@@ -62,7 +62,7 @@
                             </span>
                             <span class="left">
                                 <span class="user-info">
-                                    <span class="text-primary"><?=$item["user"]?></span>
+                                    <span class="text-primary"><?=($item["user"]) ? $item["user"] : "Не назначена"?></span>
                                     <span class="text-primary"><?=$item["date"]?></span>
                                     <span class="text-primary"><a href="<?=$item["project_url"]?>" target="_blank"><?=$item["project"]?></a></span>
                                 </span>
