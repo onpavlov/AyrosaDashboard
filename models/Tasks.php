@@ -94,15 +94,20 @@ class Tasks extends \yii\db\ActiveRecord
     }
 
     /**
-     * @param array $filter
+     * @param $filter - ассоциативный массив с фильтром
      * @return array
      */
     public function getTasks($filter = array())
     {
-        if (empty($filter)) {
-            $tasks = $this->find()->orderBy("sort")->all();
+        if ($filter["project_id"] > 0 && $filter["user"] > 0) {
+            $user = BcUsers::findOne($filter["user"]);
+            $tasks = $user->getTasks()->where(["project_id" => $filter["project_id"]])->orderBy("sort")->all();
+        } elseif ($filter["user"] > 0) {
+            $tasks = BcUsers::findOne($filter["user"])->getTasks()->orderBy("sort")->all();
+        } elseif ($filter["project_id"] > 0) {
+            $tasks = Tasks::find()->where(["project_id" => $filter["project_id"]])->orderBy("sort")->all();
         } else {
-            $tasks = $this->find()->where($filter)->orderBy("sort")->all();
+            $tasks = Tasks::find()->orderBy("sort")->all();
         }
 
         $arTasks = array(
@@ -187,7 +192,7 @@ class Tasks extends \yii\db\ActiveRecord
             $tasks->status          = 1;
             $tasks->comments_count  = (int) $task->{"comments-count"};
             $tasks->sort            = ($maxSort) ? $maxSort + 10 : 10;
-            $tasks->link            = Yii::$app->params["BChost"] . "projects/" . $project->id . "/todo_items/" . $id . "/comments";
+            $tasks->link            = Yii::$app->params["BChost"] . "projects/" . $project->bc_project_id . "/todo_items/" . $id . "/comments";
 
             if (!$tasks->save()) {
                 if (($tasks->getIsNewRecord())) {
@@ -203,7 +208,7 @@ class Tasks extends \yii\db\ActiveRecord
                 }
             }
 
-            $taskUsers  = (TasksBcUsers::findOne(["tasks_id" => $tasks->bc_task_id])) ? TasksBcUsers::findOne(["task_id" => $tasks->bc_task_id]) : new TasksBcUsers();
+            $taskUsers  = (TasksBcUsers::findOne(["tasks_id" => $tasks->id])) ? TasksBcUsers::findOne(["tasks_id" => $tasks->id]) : new TasksBcUsers();
             $users      = BcUsers::findOne(["bc_user_id" => (string) $task->{"responsible-party-id"}]);
 
             $taskUsers->tasks_id    = $tasks->id;

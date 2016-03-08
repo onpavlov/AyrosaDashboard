@@ -6,8 +6,8 @@ $(document).ready(function() {
             var value = $(el).val();
 
             if (value == "projects") {
+                parse({"action" : value + "Update"});
                 var projects = getProjects();
-                data.push({"action" : value + "Update"});
 
                 $(projects).each(function(i, el) {
                     data.push({"action" : "taskUpdate", "params" : el});

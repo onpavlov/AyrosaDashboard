@@ -10,18 +10,20 @@
         <div class="col-md-3">
             <select class="form-control implementer">
                 <option value="0">Ответственный</option>
+                <?$selected=($filterValue["user"]) ? $filterValue["user"] : ""?>
                 <? foreach ($filter["users"] as $user):?>
-                    <option value="<?=$user["id"]?>">
+                    <option value="<?=$user["id"]?>" <?=($selected == $user["id"]) ? "selected" : ""?>>
                         <?=(!empty($user["firstname"]) || !empty($user["lastname"])) ? $user["firstname"] . " " . $user["lastname"] : $user["username"]?>
                     </option>
                 <?endforeach;?>
             </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <select class="form-control project">
-                <option>Проект</option>
+                <option value="0">Все проекты</option>
+                <?$selected=($filterValue["project_id"]) ? $filterValue["project_id"] : ""?>
                 <? foreach ($filter["projects"] as $project):?>
-                    <option value="<?=$project["id"]?>">
+                    <option value="<?=$project["id"]?>" <?=($selected == $project["id"]) ? "selected" : ""?>>
                         <?=$project["project_name"]?>
                     </option>
                 <?endforeach;?>

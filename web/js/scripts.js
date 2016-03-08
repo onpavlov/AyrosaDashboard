@@ -70,5 +70,41 @@ $(function() {
         }
     }).disableSelection();
 
-    //$( "#sortable1, #sortable2, #sortable3" ).disableSelection();
+    $("select.implementer, select.project").change(function() {
+        var filter = {
+            "implementer" : $("select.implementer").val(),
+            "project" : $("select.project").val()
+        };
+
+        $.ajax({
+            url: "/task/ajax/",
+            data: filter,
+            dataType: "json",
+            success: function(data) {
+                renderList(data.high, "high");
+                renderList(data.middle, "middle");
+                renderList(data.low, "low");
+            }
+        });
+    });
+
+    function renderList(data, priority) {
+        var ul = $("ul." + priority + "-priority");
+        var li = "";
+
+        $(data).each(function(i, el) {
+            li += "<li class='ui-sortable-handle'>";
+            li += "<p class='task' data-sort='" + el.sort + "' data-priority='" + priority + "' data-id='" + el.id + "'>";
+            li += "<span class='glyphicon glyphicon-option-vertical' aria-hidden='true'></span>";
+            li += "<span class='title'>" + el.name + "<a target='_blank' href='" + el.task_url + "'><span class='glyphicon glyphicon-link' aria-hidden='true'></span></a></span>";
+            li += "<span class='left'>";
+            li += "<span class='user-info'>";
+            li += "<span class='text-primary'>" + el.user + "</span>";
+            li += "<span class='text-primary'>" + el.date + "</span>";
+            li += "<span class='text-primary'><a target='_blank' href='" + el.project_url + "'>" + el.project + "</a></span>";
+            li += "</span></span></p></li>";
+        });
+
+        ul.html(li);
+    }
 });
