@@ -99,12 +99,12 @@ class Tasks extends \yii\db\ActiveRecord
      */
     public function getTasks($filter = array())
     {
-        if ($filter["project_id"] > 0 && $filter["user"] > 0) {
+        if (isset($filter["project_id"]) && isset($filter["user"]) && $filter["project_id"] > 0 && $filter["user"] > 0) {
             $user = BcUsers::findOne($filter["user"]);
             $tasks = $user->getTasks()->where(["project_id" => $filter["project_id"]])->orderBy("sort")->all();
-        } elseif ($filter["user"] > 0) {
+        } elseif (isset($filter["user"]) && $filter["user"] > 0) {
             $tasks = BcUsers::findOne($filter["user"])->getTasks()->orderBy("sort")->all();
-        } elseif ($filter["project_id"] > 0) {
+        } elseif (isset($filter["project_id"]) && $filter["project_id"] > 0) {
             $tasks = Tasks::find()->where(["project_id" => $filter["project_id"]])->orderBy("sort")->all();
         } else {
             $tasks = Tasks::find()->orderBy("sort")->all();
