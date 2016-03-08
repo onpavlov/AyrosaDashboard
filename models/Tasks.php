@@ -209,7 +209,7 @@ class Tasks extends \yii\db\ActiveRecord
             }
 
             $taskUsers  = (TasksBcUsers::findOne(["tasks_id" => $tasks->id])) ? TasksBcUsers::findOne(["tasks_id" => $tasks->id]) : new TasksBcUsers();
-            $users      = BcUsers::findOne(["bc_user_id" => (string) $task->{"responsible-party-id"}]);
+            $users      = BcUsers::findOne(["bc_user_id" => (int) $task->{"responsible-party-id"}]);
 
             $taskUsers->tasks_id    = $tasks->id;
             $taskUsers->bc_users_id = $users->id;
