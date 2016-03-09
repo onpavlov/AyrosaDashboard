@@ -9,7 +9,7 @@ class m160304_183203_junction_tasks_and_bc_users extends Migration
         $this->createTable('tasks_bc_users', [
             'tasks_id' => $this->integer(),
             'bc_users_id' => $this->integer(),
-            'PRIMARY KEY(tasks_id, bc_users_id)'
+            'PRIMARY KEY(tasks_id)'
         ]);
 
         $this->createIndex('idx-tasks_users-tasks_id', 'tasks_bc_users', 'tasks_id');
