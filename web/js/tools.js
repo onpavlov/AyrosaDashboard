@@ -1,6 +1,7 @@
 $(document).ready(function() {
     $("button.parse_data").click(function() {
         var data = [];
+        $("#result-bc").html("");
 
         $("input[type=checkbox]:checked").each(function(i, el) {
             var value = $(el).val();
