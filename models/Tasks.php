@@ -128,7 +128,7 @@ class Tasks extends \yii\db\ActiveRecord
                 "sort" => $task->sort,
                 "task_url" => $task->link,
                 "date" => Yii::$app->formatter->asDate($task->date, 'php:d-m-Y'),
-                "user" => ($users->firstname && $users->lastname) ? $users->firstname . " " . $users->lastname : ""
+                "user" => ($users && $users->firstname && $users->lastname) ? $users->firstname . " " . $users->lastname : ""
             );
         }
 
