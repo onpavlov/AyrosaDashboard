@@ -191,7 +191,7 @@ class Tasks extends \yii\db\ActiveRecord
             $tasks->bc_type_name    = (string) $type->name;
             $tasks->status          = 1;
             $tasks->comments_count  = (int) $task->{"comments-count"};
-            $tasks->sort            = ($maxSort) ? $maxSort + 10 : 10;
+            $tasks->sort            = ($tasks->sort) ? $tasks->sort: $maxSort + 10;
             $tasks->link            = Yii::$app->params["BChost"] . "projects/" . $project->bc_project_id . "/todo_items/" . $id . "/comments";
 
             if (!$tasks->save()) {
