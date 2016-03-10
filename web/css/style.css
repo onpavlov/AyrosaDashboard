@@ -33,9 +33,16 @@ ul.dropable span.title {
     font-size: 14px;
 }
 
-ul.dropable span.title,
+ul.dropable span.title > a {
+    display: inline-block;
+}
+
 ul.dropable span.left {
-    width: 48%;
+    width: 58%;
+}
+
+ul.dropable span.title {
+    width: 40%;
 }
 
 ul.dropable span.left {
