@@ -5,6 +5,9 @@
 <h1 class="page-header"><?=$this->title?></h1>
 <? $guest = (Yii::$app->user->isGuest); ?>
 
+<div class="preloader" style="display: none">
+    <img src="/images/preloader.gif" alt="">
+</div>
 <div class="container-fluid">
     <div class="row" style="margin-bottom: 20px">
         <div class="col-md-3">

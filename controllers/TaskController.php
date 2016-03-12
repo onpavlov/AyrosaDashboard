@@ -31,6 +31,10 @@ class TaskController extends \yii\web\Controller
 
     public function actionIndex()
     {
+        /*if (!Yii::$app->user->can("seeTasks")) {
+            die("You don't have permissions");
+        }*/
+
         $tasks      = new Tasks();
         $users      = new BcUsers();
         $projects   = new Projects();

@@ -70,3 +70,20 @@ label.username {
     color: #fff;
     margin: 0;
 }
+
+.preloader {
+    background-color: #ffffff;
+    position: absolute;
+    text-align: center;
+    z-index: 900;
+    opacity: 0.8;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: 0;
+}
+
+.preloader img {
+    position: fixed;
+    margin-top: 30vh;
+}

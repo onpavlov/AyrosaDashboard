@@ -7,6 +7,7 @@ $(function() {
         connectWith: "ul",
         axis: "y",
 
+        /* Сохраняем индексы сортировки перед перетаскиванием */
         start: function(event, ui) {
             if (dashboard.sort.length == 0) {
                 $("ul.dropable").each(function(i, el) {
@@ -17,6 +18,7 @@ $(function() {
             }
         },
 
+        /* Проставляем приоритет и удаляем сообщение об отсутствии задач (если есть) */
         beforeStop: function(event, ui) {
             var parent = ui.item.parent();
 
@@ -33,6 +35,7 @@ $(function() {
             }
         },
 
+        /* Назначаем новые индексы сортировки, приоритет и сохраняем данные */
         stop: function() {
             dashboard.i = 0;
             dashboard.data = {"id":[], "sort":{}, "priority":[]};
@@ -70,6 +73,7 @@ $(function() {
         }
     }).disableSelection();
 
+    /* Выборка задач при изменении фильтра */
     $("select.implementer, select.project").change(function() {
         var filter = {
             "implementer" : $("select.implementer").val(),
@@ -80,10 +84,14 @@ $(function() {
             url: "/task/ajax/",
             data: filter,
             dataType: "json",
+            beforeSend: function() {
+                $("div.preloader").fadeIn();
+            },
             success: function(data) {
                 renderList(data.high, "high");
                 renderList(data.middle, "middle");
                 renderList(data.low, "low");
+                $("div.preloader").fadeOut();
             }
         });
     });
@@ -104,6 +112,10 @@ $(function() {
             li += "<span class='text-primary'><a target='_blank' href='" + el.project_url + "'>" + el.project + "</a></span>";
             li += "</span></span></p></li>";
         });
+
+        if (!data.length) {
+            li += "<p class='message ui-state-disabled' style='padding: 0 20px'>Задачи отсутствуют</p>";
+        }
 
         ul.html(li);
     }

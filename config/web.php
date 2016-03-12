@@ -53,6 +53,10 @@ $config = [
             ],
         ],
 
+        'authManager' => [
+            'class' => 'yii\rbac\PhpManager',
+        ],
+
         'curl' => [
             'class' => 'app\components\Curl'
         ]

@@ -38,6 +38,10 @@ class ToolsController extends \yii\web\Controller
 
     public function actionIndex()
     {
+        /*if (!Yii::$app->user->can("getTools")) {
+            die("You don't have permissions");
+        }*/
+
         return $this->render('index');
     }
 
