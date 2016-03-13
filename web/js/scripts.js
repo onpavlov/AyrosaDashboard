@@ -101,13 +101,15 @@ $(function() {
         var li = "";
 
         $(data).each(function(i, el) {
+            var user = (el.user) ? el.user : "Не назначена";
+
             li += "<li class='ui-sortable-handle'>";
             li += "<p class='task' data-sort='" + el.sort + "' data-priority='" + priority + "' data-id='" + el.id + "'>";
             li += (canUpdate) ? "<span class='glyphicon glyphicon-option-vertical' aria-hidden='true'></span>" : "<span aria-hidden='true'></span>";
             li += "<span class='title'>" + el.name + "<a target='_blank' href='" + el.task_url + "'><span class='glyphicon glyphicon-link' aria-hidden='true'></span></a></span>";
             li += "<span class='left'>";
             li += "<span class='user-info'>";
-            li += "<span class='text-primary'>" + el.user + "</span>";
+            li += "<span class='text-primary'>" + user + "</span>";
             li += "<span class='text-primary'>" + el.date + "</span>";
             li += "<span class='text-primary'><a target='_blank' href='" + el.project_url + "'>" + el.project + "</a></span>";
             li += "</span></span></p></li>";
