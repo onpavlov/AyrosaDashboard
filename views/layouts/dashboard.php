@@ -30,10 +30,7 @@ AppAsset::register($this);
             'class' => 'navbar-inverse navbar-fixed-top',
         ],
     ]);
-    if (Yii::$app->user->isGuest) {
-        $menuItems[] = ['label' => 'Зарегистрироваться', 'url' => ['/site/signup']];
-        $menuItems[] = ['label' => 'Войти', 'url' => ['/site/login']];
-    } else {
+    if (!Yii::$app->user->isGuest) {
         $menuItems[] = '<li>' . Html::label(Yii::$app->user->identity->firstname . ' ' . Yii::$app->user->identity->lastname, null, ['class' => 'username']) . '</li>';
         $menuItems[] = '<li>'
             . Html::beginForm(['/site/logout'], 'post')
@@ -46,7 +43,7 @@ AppAsset::register($this);
     }
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav navbar-right'],
-        'items' => $menuItems,
+        'items' => ($menuItems) ? $menuItems : array(),
     ]);
     NavBar::end();
     ?>
@@ -56,7 +53,7 @@ AppAsset::register($this);
                 <?
                 $leftMenuItems[] = ['label' => 'Приоритет', 'url' => ['/task/index']];
 
-                if (Yii::$app->user->identity) {
+                if (Yii::$app->user->can("getTools")) {
                     $leftMenuItems[] = ['label' => 'Инструменты', 'url' => ['/tools/index']];
                 }
                 ?>

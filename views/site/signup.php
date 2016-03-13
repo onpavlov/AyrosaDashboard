@@ -5,6 +5,7 @@
 /* @var $model \app\models\SignupForm */
 
 use yii\helpers\Html;
+use yii\helpers\BaseUrl;
 use yii\bootstrap\ActiveForm;
 
 $this->title = 'Регистрация';
@@ -16,7 +17,7 @@ $this->params['breadcrumbs'][] = $this->title;
     <p>Заполните все обязательные поля:</p>
 
     <div class="row">
-        <div class="col-lg-5">
+        <div class="col-lg-8">
             <?php $form = ActiveForm::begin(['id' => 'form-signup']); ?>
 
             <?= $form->field($model, 'username')->label('Логин')->textInput(['autofocus' => true]) ?>
@@ -32,6 +33,9 @@ $this->params['breadcrumbs'][] = $this->title;
                 </div>
 
             <?php ActiveForm::end(); ?>
+        </div>
+        <div class="col-lg-8">
+            <a href="<?= BaseUrl::to(["site/login"]) ?>">Войти на сайт</a>
         </div>
     </div>
 </div>

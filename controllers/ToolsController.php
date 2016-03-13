@@ -5,6 +5,7 @@ namespace app\controllers;
 use Yii;
 use yii\filters\AccessControl;
 use app\models\Tasks;
+use app\models\Users;
 use app\models\BcUsers;
 use app\models\Projects;
 use app\components\Curl;
@@ -38,9 +39,9 @@ class ToolsController extends \yii\web\Controller
 
     public function actionIndex()
     {
-        /*if (!Yii::$app->user->can("getTools")) {
-            die("You don't have permissions");
-        }*/
+        if (!Yii::$app->user->can("getTools")) {
+            throw new \yii\web\HttpException(404, 'Запрашиваемая страница не найдена.');
+        }
 
         return $this->render('index');
     }
@@ -51,6 +52,10 @@ class ToolsController extends \yii\web\Controller
      * */
     public function actionUpdate()
     {
+        if (!Yii::$app->user->can("getTools")) {
+            throw new \yii\web\HttpException(404, 'Запрашиваемая страница не найдена.');
+        }
+
         $action = Yii::$app->request->get("action");
         $params = Yii::$app->request->get("params");
 
@@ -81,8 +86,37 @@ class ToolsController extends \yii\web\Controller
      * */
     public function actionProjects()
     {
+        if (!Yii::$app->user->can("getTools")) {
+            throw new \yii\web\HttpException(404, 'Запрашиваемая страница не найдена.');
+        }
+
         $projects = new Projects();
         echo json_encode($projects->getProjectsIds());
+    }
+
+    /*
+     * Проверяет почту при регистрации на существование у пользователя basecamp
+     * @return json
+     * */
+    public function actionCheckmail()
+    {
+        $email = Yii::$app->request->get("checkMail");
+
+        if (Users::findOne(["email" => $email])) {
+            return false;
+        } elseif (BcUsers::findOne(["bc_email" => $email])) {
+            return true;
+        } else {
+            $people = $this->getPeople();
+
+            foreach ($people as $person) {
+                if ((string) $person->{"email-address"} == $email) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 
     /*

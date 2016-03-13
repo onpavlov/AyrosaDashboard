@@ -22,7 +22,7 @@ class SignupForm extends Model
     {
         return [
             ['username', 'filter', 'filter' => 'trim'],
-            ['username', 'required'],
+            ['username', 'required', 'message' => 'Имя пользователя обязательно для заполнения'],
             ['username', 'unique', 'targetClass' => '\app\models\Users', 'message' => 'Имя пользователя занято.'],
             ['username', 'string', 'min' => 2, 'max' => 255],
 
@@ -32,12 +32,12 @@ class SignupForm extends Model
             ['lastname', 'string', 'max' => 255],
 
             ['email', 'filter', 'filter' => 'trim'],
-            ['email', 'required'],
+            ['email', 'required', 'message' => 'Email обязательно для заполнения'],
             ['email', 'email'],
             ['email', 'string', 'max' => 255],
             ['email', 'unique', 'targetClass' => '\app\models\Users', 'message' => 'email адрес занят.'],
 
-            ['password', 'required'],
+            ['password', 'required', 'message' => 'Укажите пароль'],
             ['password', 'string', 'min' => 6],
         ];
     }

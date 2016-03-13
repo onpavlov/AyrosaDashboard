@@ -31,15 +31,16 @@ class TaskController extends \yii\web\Controller
 
     public function actionIndex()
     {
-        /*if (!Yii::$app->user->can("seeTasks")) {
-            die("You don't have permissions");
-        }*/
+        if (!Yii::$app->user->can("seeTasks")) {
+            $this->redirect("/login");
+        }
 
         $tasks      = new Tasks();
         $users      = new BcUsers();
         $projects   = new Projects();
         $filter     = array();
 
+        /* Берем фильтры из куки если существуют */
         if (Yii::$app->request->cookies->getValue("user") || Yii::$app->request->cookies->getValue("project_id")) {
             $filter["user"] = Yii::$app->request->cookies->getValue("user");
             $filter["project_id"] = Yii::$app->request->cookies->getValue("project_id");
@@ -75,11 +76,13 @@ class TaskController extends \yii\web\Controller
 
         Yii::$app->response->cookies->remove("user");
         Yii::$app->response->cookies->remove("project_id");
-
         Yii::$app->response->cookies->add(new \yii\web\Cookie(["name" => "user", "value" => $implementer, "expire" => time() + 86400 * 365]));
         Yii::$app->response->cookies->add(new \yii\web\Cookie(["name" => "project_id", "value" => $project, "expire" => time() + 86400 * 365]));
 
-        return json_encode($ajax->getTasks($filter));
+        $result = $ajax->getTasks($filter);
+        $result["updatePriority"] = (Yii::$app->user->can("updatePriority")) ? true : false;
+
+        return json_encode($result);
     }
 
 }

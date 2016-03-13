@@ -3,7 +3,7 @@
 ?>
 <?$this->registerJsFile("js/scripts.js", array("depends" => "app\assets\UiAsset", "position" => $this::POS_HEAD))?>
 <h1 class="page-header"><?=$this->title?></h1>
-<? $guest = (Yii::$app->user->isGuest); ?>
+<? $permission = (Yii::$app->user->can("updatePriority")); ?>
 
 <div class="preloader" style="display: none">
     <img src="/images/preloader.gif" alt="">
@@ -60,7 +60,7 @@
                     <?foreach($task as $item):?>
                     <li>
                         <p class="task" data-id="<?=$item["id"]?>" data-priority="<?=$priority?>" data-sort="<?=$item["sort"]?>">
-                            <span class="<?=(!$guest) ? "glyphicon glyphicon-option-vertical" : ""?>" aria-hidden="true"></span>
+                            <span class="<?=($permission) ? "glyphicon glyphicon-option-vertical" : ""?>" aria-hidden="true"></span>
                             <span class="title">
                                 <?=$item["name"]?>
                                 <a href="<?=$item["task_url"]?>" target="_blank"><span class="glyphicon glyphicon-link" aria-hidden="true"></span></a>
@@ -82,7 +82,7 @@
     </div>
 </div>
 
-<? if ($guest):?>
+<? if (!$permission):?>
     <script type="text/javascript">
         $( "ul.dropable" ).sortable({
             disabled: true

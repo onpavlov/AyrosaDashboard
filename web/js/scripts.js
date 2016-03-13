@@ -88,22 +88,22 @@ $(function() {
                 $("div.preloader").fadeIn();
             },
             success: function(data) {
-                renderList(data.high, "high");
-                renderList(data.middle, "middle");
-                renderList(data.low, "low");
+                renderList(data.high, "high", data.updatePriority);
+                renderList(data.middle, "middle", data.updatePriority);
+                renderList(data.low, "low", data.updatePriority);
                 $("div.preloader").fadeOut();
             }
         });
     });
 
-    function renderList(data, priority) {
+    function renderList(data, priority, canUpdate) {
         var ul = $("ul." + priority + "-priority");
         var li = "";
 
         $(data).each(function(i, el) {
             li += "<li class='ui-sortable-handle'>";
             li += "<p class='task' data-sort='" + el.sort + "' data-priority='" + priority + "' data-id='" + el.id + "'>";
-            li += "<span class='glyphicon glyphicon-option-vertical' aria-hidden='true'></span>";
+            li += (canUpdate) ? "<span class='glyphicon glyphicon-option-vertical' aria-hidden='true'></span>" : "<span aria-hidden='true'></span>";
             li += "<span class='title'>" + el.name + "<a target='_blank' href='" + el.task_url + "'><span class='glyphicon glyphicon-link' aria-hidden='true'></span></a></span>";
             li += "<span class='left'>";
             li += "<span class='user-info'>";
