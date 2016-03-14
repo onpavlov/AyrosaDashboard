@@ -43,7 +43,7 @@ AppAsset::register($this);
     }
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav navbar-right'],
-        'items' => ($menuItems) ? $menuItems : array(),
+        'items' => (isset($menuItems) && !empty($menuItems)) ? $menuItems : array(),
     ]);
     NavBar::end();
     ?>
