@@ -95,31 +95,6 @@ class ToolsController extends \yii\web\Controller
     }
 
     /*
-     * Проверяет почту при регистрации на существование у пользователя basecamp
-     * @return json
-     * */
-    public function actionCheckmail()
-    {
-        $email = Yii::$app->request->get("checkMail");
-
-        if (Users::findOne(["email" => $email])) {
-            return false;
-        } elseif (BcUsers::findOne(["bc_email" => $email])) {
-            return true;
-        } else {
-            $people = $this->getPeople();
-
-            foreach ($people as $person) {
-                if ((string) $person->{"email-address"} == $email) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-    }
-
-    /*
      * Получает xml данные при помощи CURL
      * @return string
      * */

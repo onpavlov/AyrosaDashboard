@@ -47,6 +47,7 @@ $config = [
             'showScriptName' => false,
             'rules' => [
                 '/' => 'task/index',
+                'mytasks' => 'task/mytasks',
                 'login' => 'site/login',
                 'signup' => 'site/signup',
                 'tools' => 'tools/index',

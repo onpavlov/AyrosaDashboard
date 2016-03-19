@@ -12,6 +12,18 @@ use yii\filters\AccessControl;
 class TaskController extends \yii\web\Controller
 {
     public $layout = "dashboard";
+    public $avatar = "/images/avatar.gif";
+    private $bcUser;
+    public $email;
+
+    public function init()
+    {
+        if (!Yii::$app->user->isGuest) {
+            $this->email    = Yii::$app->user->identity->email;
+            $this->bcUser   = BcUsers::findOne(["bc_email" => $this->email]);
+            $this->avatar   = $this->bcUser->bc_avatar;
+        }
+    }
 
     public function behaviors()
     {
@@ -51,6 +63,21 @@ class TaskController extends \yii\web\Controller
         $arFilterData["projects"] = $projects->getProjects();
 
         return $this->render("index", array("tasks" => $arTasks, "filter" => $arFilterData, "filterValue" => $filter));
+    }
+
+    public function actionMytasks()
+    {
+        if (Yii::$app->user->isGuest) {
+            $this->redirect("/login");
+        }
+
+        $tasks      = new Tasks();
+        $filter     = array();
+
+        $filter["user"] = $this->bcUser->id;
+        $arTasks        = $tasks->getTasks($filter);
+
+        return $this->render("mytasks", array("tasks" => $arTasks, "filterValue" => $filter));
     }
 
     public function actionUpdate()

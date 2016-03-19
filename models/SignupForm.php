@@ -33,9 +33,10 @@ class SignupForm extends Model
 
             ['email', 'filter', 'filter' => 'trim'],
             ['email', 'required', 'message' => 'Email обязательно для заполнения'],
-            ['email', 'email'],
+            ['email', 'email', 'message' => 'Некорректный email адрес'],
             ['email', 'string', 'max' => 255],
             ['email', 'unique', 'targetClass' => '\app\models\Users', 'message' => 'email адрес занят.'],
+            ['email', 'exist', 'targetAttribute' => 'bc_email', 'targetClass' => '\app\models\BcUsers', 'message' => 'Email не найден в базе Basecamp'],
 
             ['password', 'required', 'message' => 'Укажите пароль'],
             ['password', 'string', 'min' => 6],

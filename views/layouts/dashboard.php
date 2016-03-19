@@ -31,7 +31,6 @@ AppAsset::register($this);
         ],
     ]);
     if (!Yii::$app->user->isGuest) {
-        $menuItems[] = '<li>' . Html::label(Yii::$app->user->identity->firstname . ' ' . Yii::$app->user->identity->lastname, null, ['class' => 'username']) . '</li>';
         $menuItems[] = '<li>'
             . Html::beginForm(['/site/logout'], 'post')
             . Html::submitButton(
@@ -40,6 +39,8 @@ AppAsset::register($this);
             )
             . Html::endForm()
             . '</li>';
+        $menuItems[] = '<li style="margin: 0 5px"><img src="' . $this->context->avatar . '" alt="' . Yii::$app->user->identity->username . '" class="img-circle"></li>';
+        $menuItems[] = '<li>   ' . Html::label(Yii::$app->user->identity->firstname . ' ' . Yii::$app->user->identity->lastname, null, ['class' => 'username']) . '</li>';
     }
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav navbar-right'],
@@ -51,7 +52,11 @@ AppAsset::register($this);
         <div class="row">
             <div class="col-sm-3 col-md-2 sidebar">
                 <?
-                $leftMenuItems[] = ['label' => 'Приоритет', 'url' => ['/task/index']];
+                if (Yii::$app->user->can("seeTasks")) {
+                    $leftMenuItems[] = ['label' => 'Мои задачи', 'url' => ['/task/mytasks']];
+                }
+
+                $leftMenuItems[] = ['label' => 'Все задачи', 'url' => ['/task/index']];
 
                 if (Yii::$app->user->can("getTools")) {
                     $leftMenuItems[] = ['label' => 'Инструменты', 'url' => ['/tools/index']];
