@@ -49,6 +49,12 @@ class SiteController extends Controller
         ];
     }
 
+    public function init()
+    {
+        Yii::$app->setHomeUrl("/mytasks");
+        parent::init();
+    }
+
     public function actionLogin()
     {
         $this->layout   = "login";

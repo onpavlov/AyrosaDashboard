@@ -5,7 +5,6 @@ namespace app\controllers;
 use Yii;
 use yii\filters\AccessControl;
 use app\models\Tasks;
-use app\models\Users;
 use app\models\BcUsers;
 use app\models\Projects;
 use app\components\Curl;
@@ -19,6 +18,15 @@ class ToolsController extends \yii\web\Controller
 
     public $layout  = "dashboard";
     private $result = array();
+    public $avatar  = "/images/avatar.gif";
+
+    public function init()
+    {
+        if (!Yii::$app->user->isGuest) {
+            $email    = Yii::$app->user->identity->email;
+            $this->avatar   = BcUsers::findOne(["bc_email" => $email])->bc_avatar;
+        }
+    }
 
     public function behaviors()
     {
