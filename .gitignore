@@ -26,8 +26,7 @@ phpunit.phar
 # local phpunit config
 /phpunit.xml
 
-/rbac
+rbac
 /config/db.php
 /config/params.php
 requirements.php
-/rbac/assignments.php
