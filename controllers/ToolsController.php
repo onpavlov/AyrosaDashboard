@@ -74,12 +74,6 @@ class ToolsController extends \yii\web\Controller
                 $this->result = $users->updateUsers($this->getPeople());
                 break;
 
-            case "projectsUpdate":
-                $projects = new Projects();
-
-                $this->result = $projects->updateProjects($this->getProjects());
-                break;
-
             case "taskUpdate":
                 $this->result = $this->updateTask($params);
                 break;
@@ -99,6 +93,8 @@ class ToolsController extends \yii\web\Controller
         }
 
         $projects = new Projects();
+        $projects->updateProjects($this->getProjects());
+
         echo json_encode($projects->getProjectsIds());
     }
 

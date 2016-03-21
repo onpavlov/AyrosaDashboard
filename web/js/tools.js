@@ -1,55 +1,46 @@
 $(document).ready(function() {
-    $("button.parse_data").click(function() {
-        var len     = 0;
-        progress    = {};
-        progress.i  = 0;
-        progress.data = [];
+    updOrder = [];
+    progress = {};
+    progress.i = 0;
 
+    $("button.parse_data").click(function() {
         $("#result-bc").html("");
 
         $("input[type=checkbox]:checked").each(function(i, el) {
             var value = $(el).val();
 
-            /* Формируем объект с данными для обновления */
             if (value == "projects") {
-                updateProjects();
-                len = 1;
+                getProjects();
             } else {
-                progress.data.push({"action" : value + "Update"});
+                updOrder.push({"action" : value + "Update"});
             }
         });
 
-        if (progress.data.length) {
-            progress.step   = 100 / (progress.data.length + len);
-            progress.bar    = $(".progress-bar");
+        if (updOrder.length) {
+            progress.step = 100 / updOrder.length;
+            progress.bar = $(".progress-bar");
             $(".progress").removeAttr("style");
             progress.bar.addClass("active");
-
-            $(progress.data).each(function(i, el) {
-                parse(el);
-            });
         }
+
+        parse();
     });
 
-    function parse(item, async) {
+    function parse() {
         $.ajax({
             url: "tools/update",
             dataType: "json",
-            data: item,
-            async: async || true,
+            data: updOrder[progress.i],
             success: function(data) {
-                /* Обновление прогресс-бара */
                 progress.current = progress.step * (progress.i + 1);
                 progress.bar.html(~~progress.current + "%");
                 progress.bar.data("aria-valuenow", ~~progress.current);
                 progress.bar.width(~~progress.current + "%");
-                progress.i += 1;
 
-                if (~~progress.current == 100) {
+                if (progress.current == 100) {
                     progress.bar.removeClass("active");
                 }
 
-                /* Вывод сообщений в лог результатов */
                 var result = "";
                 $(data).each(function(i, el) {
                     if (el.status == "success") {
@@ -59,24 +50,36 @@ $(document).ready(function() {
                     }
                 });
                 $("#result-bc").append(result);
+                progress.i += 1;
             },
             error: function() {
+                progress.current = progress.step * (progress.i + 1);
+                progress.bar.html(~~progress.current + "%");
+                progress.bar.data("aria-valuenow", ~~progress.current);
+                progress.bar.width(~~progress.current + "%");
+
+                if (progress.current == 100) {
+                    progress.bar.removeClass("active");
+                }
                 console.log("error");
+                progress.i += 1;
+            },
+            complete: function () {
+                if (progress.current < 100) {
+                    parse();
+                }
             }
         });
     }
 
-    /* Запрашивает список  */
-    function updateProjects() {
-        parse({"action" : "projectsUpdate"}, false);
-
+    function getProjects() {
         $.ajax({
             url: "tools/projects",
-            async: false,
             dataType: "json",
+            async: false,
             success: function(data) {
-                $(data).each(function(i, el) {
-                    progress.data.push({"action" : "taskUpdate", "params" : el});
+                $(data).each(function (i, el) {
+                    updOrder.push({"action" : "taskUpdate", "params" : el});
                 });
             }
         });

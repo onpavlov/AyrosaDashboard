@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\caching\TagDependency;
 
 /**
  * This is the model class for table "tasks".
@@ -99,15 +100,22 @@ class Tasks extends \yii\db\ActiveRecord
      */
     public function getTasks($filter = array())
     {
-        if (isset($filter["project_id"]) && isset($filter["user"]) && $filter["project_id"] > 0 && $filter["user"] > 0) {
-            $user = BcUsers::findOne($filter["user"]);
-            $tasks = $user->getTasks()->where(["project_id" => $filter["project_id"]])->andWhere(["status" => 1])->orderBy("sort")->all();
-        } elseif (isset($filter["user"]) && $filter["user"] > 0) {
-            $tasks = BcUsers::findOne($filter["user"])->getTasks()->andWhere(["status" => 1])->orderBy("sort")->all();
-        } elseif (isset($filter["project_id"]) && $filter["project_id"] > 0) {
-            $tasks = Tasks::find()->where(["project_id" => $filter["project_id"]])->andWhere(["status" => 1])->orderBy("sort")->all();
-        } else {
-            $tasks = Tasks::find()->where(["status" => 1])->orderBy("sort")->all();
+        $tag1 = (isset($filter["user"])) ? "user" . $filter["user"] : "user0";
+        $tag2 = (isset($filter["project_id"])) ? "project" . $filter["project_id"] : "project0";
+
+        if (!$tasks = Yii::$app->cache->get($tag1.$tag2)) {
+            if (isset($filter["project_id"]) && isset($filter["user"]) && $filter["project_id"] > 0 && $filter["user"] > 0) {
+                $user = BcUsers::findOne($filter["user"]);
+                $tasks = $user->getTasks()->where(["project_id" => $filter["project_id"]])->andWhere(["status" => 1])->orderBy("sort")->all();
+            } elseif (isset($filter["user"]) && $filter["user"] > 0) {
+                $tasks = BcUsers::findOne($filter["user"])->getTasks()->andWhere(["status" => 1])->orderBy("sort")->all();
+            } elseif (isset($filter["project_id"]) && $filter["project_id"] > 0) {
+                $tasks = Tasks::find()->where(["project_id" => $filter["project_id"]])->andWhere(["status" => 1])->orderBy("sort")->all();
+            } else {
+                $tasks = Tasks::find()->where(["status" => 1])->orderBy("sort")->all();
+            }
+
+            Yii::$app->cache->set($tag1.$tag2, $tasks, 18);
         }
 
         $arTasks = array(
