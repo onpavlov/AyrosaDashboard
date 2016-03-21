@@ -115,7 +115,7 @@ class Tasks extends \yii\db\ActiveRecord
                 $tasks = Tasks::find()->where(["status" => 1])->orderBy("sort")->all();
             }
 
-            Yii::$app->cache->set($tag1.$tag2, $tasks, 18);
+            Yii::$app->cache->set($tag1.$tag2, $tasks, 100);
         }
 
         $arTasks = array(
