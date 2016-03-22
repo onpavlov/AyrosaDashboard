@@ -25,6 +25,7 @@ class SignupForm extends Model
             ['username', 'required', 'message' => 'Имя пользователя обязательно для заполнения'],
             ['username', 'unique', 'targetClass' => '\app\models\Users', 'message' => 'Имя пользователя занято.'],
             ['username', 'string', 'min' => 2, 'max' => 255],
+            ['username', 'match', 'pattern' => '/^[a-zA-Z][a-zA-Z0-9]+$/', 'message' => 'Допустимы только буквы латинского алфавита и цифры'],
 
             ['firstname', 'filter', 'filter' => 'trim'],
             ['firstname', 'string', 'max' => 255],
