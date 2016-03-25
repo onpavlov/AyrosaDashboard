@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use Yii;
+use yii\base\Exception;
 use yii\filters\AccessControl;
 use app\models\Tasks;
 use app\models\BcUsers;
@@ -152,8 +153,13 @@ class ToolsController extends \yii\web\Controller
      * */
     private function getTaskType($id)
     {
-        $xml = new \SimpleXMLElement($this->getXML(Yii::$app->params["BChost"] . "projects/" . $id . "/" . self::ACTION_TODO));
-        return $xml;
+        try {
+            $result = new \SimpleXMLElement($this->getXML(Yii::$app->params["BChost"] . "projects/" . $id . "/" . self::ACTION_TODO));
+        } catch (\Exception $e) {
+            $result = false;
+        }
+
+        return $result;
     }
 
     /*
@@ -178,6 +184,12 @@ class ToolsController extends \yii\web\Controller
 
         $project = Projects::findOne($project_id);
         $typesXml = $this->getTaskType($project->bc_project_id);
+        
+        if (!$typesXml) {
+            $project->deactivateProject($project_id);
+            $tasks->deactivateTasks($project_id);
+            return;
+        }
 
         foreach ($typesXml->{"todo-list"} as $type) {
             $typeId     = (int) $type->id;

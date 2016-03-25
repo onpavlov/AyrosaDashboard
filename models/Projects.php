@@ -58,7 +58,7 @@ class Projects extends \yii\db\ActiveRecord
      * */
     public function getProjects()
     {
-        return $this->find()->all();
+        return $this->findAll(["status" => 1]);
     }
 
     /*
@@ -115,5 +115,16 @@ class Projects extends \yii\db\ActiveRecord
         }
 
         return $result;
+    }
+
+    /*
+     * Деактивирует удаленные и архивные проекты
+     * */
+    public function deactivateProject($id)
+    {
+        $project = $this->findOne(["id" => $id]);
+        $project->status = 0;
+
+        $project->save();
     }
 }

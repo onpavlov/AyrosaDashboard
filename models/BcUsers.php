@@ -84,9 +84,13 @@ class BcUsers extends \yii\db\ActiveRecord
 
     /*
      * Выбирает необходимые данные из xml объекта и записывает в таблицу bc_users
+     * @return array
      * */
     public function updateUsers(\SimpleXMLElement $xmlObject)
     {
+        $updatedUsers   = array();
+        $delete         = array();
+        
         foreach ($xmlObject as $person) {
             $id         = (int) $person->id;
             $result     = array();
@@ -113,9 +117,20 @@ class BcUsers extends \yii\db\ActiveRecord
                     );
                 }
             }
-
+            
+            $updatedUsers[] = $id;
             unset($users);
         }
+
+        $sqlUsers = $this->find()->select("bc_user_id")->all();
+
+        foreach ($sqlUsers as $sqlUser) {
+            if (!in_array($sqlUser->bc_user_id, $updatedUsers)) {
+                $delete[] = $sqlUser->bc_user_id;
+            }
+        }
+
+        $this->deleteUsers($delete);
 
         if (empty($result)) {
             $result[] = array(
@@ -125,5 +140,25 @@ class BcUsers extends \yii\db\ActiveRecord
         }
 
         return $result;
+    }
+
+    /*
+     * Удаляет пользователей из таблицы bc_users и деактивирует
+     * соответствующего пользователя дашборда
+     * */
+    public function deleteUsers($id = [])
+    {
+        if (!empty($id)) {
+            $bcUser = $this->findAll(["bc_user_id" => $id]);
+
+            foreach ($bcUser as $item) {
+                if ($user = \app\models\Users::findOne(["email" => $item->bc_email])) {
+                    $user->status = 0;
+                    $user->save();
+                }
+            }
+
+            $this->deleteAll(["bc_user_id" => $id]);
+        }
     }
 }

@@ -106,4 +106,19 @@ body {
 
 nav a.navbar-brand {
   padding: 0;
+  width: 150px;
+  margin-left: -50px !important;
+}
+
+.logo {
+  margin-top: 5px;
+  display: block;
+  height: 80%;
+  background: url("/images/logo_gray.png") no-repeat;
+  background-size: contain;
+}
+
+.logo:hover {
+  background: url("/images/logo_white.png") no-repeat;
+  background-size: contain;
 }

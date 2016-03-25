@@ -230,4 +230,17 @@ class Tasks extends \yii\db\ActiveRecord
 
         return $result;
     }
+
+    /*
+     * Деактивирует задачи
+     * */
+    public function deactivateTasks($id)
+    {
+        $tasks = $this->findAll(["project_id" => $id]);
+
+        foreach ($tasks as $task) {
+            $task->status = 0;
+            $task->save();
+        }
+    }
 }
