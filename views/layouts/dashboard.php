@@ -34,12 +34,12 @@ AppAsset::register($this);
         $menuItems[] = '<li>'
             . Html::beginForm(['/site/logout'], 'post')
             . Html::submitButton(
-                'Выйти (' . Yii::$app->user->identity->username . ')',
+                'Выйти (' . Yii::$app->user->identity->email . ')',
                 ['class' => 'btn btn-link']
             )
             . Html::endForm()
             . '</li>';
-        $menuItems[] = '<li style="margin: 0 5px"><img src="' . $this->context->avatar . '" alt="' . Yii::$app->user->identity->username . '" class="img-circle"></li>';
+        $menuItems[] = '<li style="margin: 0 5px"><img src="' . $this->context->avatar . '" alt="' . Yii::$app->user->identity->email . '" class="img-circle"></li>';
         $menuItems[] = '<li>   ' . Html::label(Yii::$app->user->identity->firstname . ' ' . Yii::$app->user->identity->lastname, null, ['class' => 'username']) . '</li>';
     }
     echo Nav::widget([

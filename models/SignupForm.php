@@ -9,7 +9,6 @@ use Yii;
  */
 class SignupForm extends Model
 {
-    public $username;
     public $email;
     public $password;
     public $firstname;
@@ -21,12 +20,6 @@ class SignupForm extends Model
     public function rules()
     {
         return [
-            ['username', 'filter', 'filter' => 'trim'],
-            ['username', 'required', 'message' => 'Имя пользователя обязательно для заполнения'],
-            ['username', 'unique', 'targetClass' => '\app\models\Users', 'message' => 'Имя пользователя занято.'],
-            ['username', 'string', 'min' => 2, 'max' => 255],
-            ['username', 'match', 'pattern' => '/^[a-zA-Z][a-zA-Z0-9]+$/', 'message' => 'Допустимы только буквы латинского алфавита и цифры'],
-
             ['firstname', 'filter', 'filter' => 'trim'],
             ['firstname', 'string', 'max' => 255],
             ['lastname', 'filter', 'filter' => 'trim'],
@@ -47,7 +40,7 @@ class SignupForm extends Model
     /**
      * Signs user up.
      *
-     * @return User|null the saved model or null if saving fails
+     * @return Users|null the saved model or null if saving fails
      */
     public function signup()
     {
@@ -56,7 +49,6 @@ class SignupForm extends Model
         }
 
         $user = new Users();
-        $user->username = $this->username;
         $user->email = $this->email;
         $user->setPassword($this->password);
         $user->generateAuthKey();
