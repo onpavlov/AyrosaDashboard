@@ -52,7 +52,7 @@ $(document).ready(function() {
                 $("#result-bc").append(result);
                 progress.i += 1;
             },
-            error: function() {
+            error: function(obj, error) {
                 progress.current = progress.step * (progress.i + 1);
                 progress.bar.html(~~progress.current + "%");
                 progress.bar.data("aria-valuenow", ~~progress.current);
@@ -61,7 +61,7 @@ $(document).ready(function() {
                 if (progress.current == 100) {
                     progress.bar.removeClass("active");
                 }
-                console.log("error");
+                console.log(error);
                 progress.i += 1;
             },
             complete: function () {
