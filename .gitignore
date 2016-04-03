@@ -30,3 +30,4 @@ rbac
 /config/db.php
 /config/params.php
 requirements.php
+/web/index.php
