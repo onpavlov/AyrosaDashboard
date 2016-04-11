@@ -67,7 +67,7 @@ class Projects extends \yii\db\ActiveRecord
     public function getProjectsIds()
     {
         $db = new \yii\db\Query();
-        return $db->select("id")->from("projects")->all();
+        return $db->select("id")->from(Projects::tableName())->all();
     }
 
     /*
@@ -92,15 +92,15 @@ class Projects extends \yii\db\ActiveRecord
 
             if (!$projects->save()) {
                 if (($projects->getIsNewRecord())) {
-                    $result[] = array(
+                    $result[] = [
                         "status" => "error",
                         "message" => "Ошибка добавления данных проекта " . (string) $project->name
-                    );
+                    ];
                 } else {
-                    $result[] = array(
+                    $result[] = [
                         "status" => "error",
                         "message" => "Ошибка обновления данных проекта " . (string) $project->name
-                    );
+                    ];
                 }
             }
 
@@ -108,10 +108,10 @@ class Projects extends \yii\db\ActiveRecord
         }
 
         if (empty($result)) {
-            $result[] = array(
+            $result[] = [
                 "status" => "success",
                 "message" => "Данные проектов успешно обновлены!"
-            );
+            ];
         }
 
         return $result;

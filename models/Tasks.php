@@ -98,7 +98,7 @@ class Tasks extends \yii\db\ActiveRecord
      * @param $filter - ассоциативный массив с фильтром
      * @return array
      */
-    public function getTasks($filter = array())
+    public function getTasks($filter = [])
     {
         $tag1 = (isset($filter["user"])) ? "user" . $filter["user"] : "user0";
         $tag2 = (isset($filter["project_id"])) ? "project" . $filter["project_id"] : "project0";
@@ -118,17 +118,17 @@ class Tasks extends \yii\db\ActiveRecord
             Yii::$app->cache->set($tag1.$tag2, $tasks, 100);
         }
 
-        $arTasks = array(
-            "high" => array(),
-            "middle" => array(),
-            "low" => array(),
-        );
+        $arTasks = [
+            "high" => [],
+            "middle" => [],
+            "low" => []
+        ];
 
         foreach ($tasks as $task) {
             $project = $task->project;
             $users   = $task->bcUsers;
 
-            $arTasks[$task->priority][] = array(
+            $arTasks[$task->priority][] = [
                 "id" => $task->id,
                 "project" => $project->project_name,
                 "project_url" => $project->link,
@@ -137,7 +137,7 @@ class Tasks extends \yii\db\ActiveRecord
                 "task_url" => $task->link,
                 "date" => Yii::$app->formatter->asDate($task->date, 'php:d-m-Y'),
                 "user" => ($users && $users->firstname && $users->lastname) ? $users->firstname . " " . $users->lastname : ""
-            );
+            ];
         }
 
         return $arTasks;
@@ -176,7 +176,7 @@ class Tasks extends \yii\db\ActiveRecord
         $id         = (int) $task->id;
         $date       = (string) $task->{"created-at"};
         $completed  = ((string) $task->completed == "true") ? 1 : 0;
-        $result     = array();
+        $result     = [];
 
         $object = $this->findOne(["bc_task_id" => $id, "project_id" => $project->id]);
 
@@ -204,15 +204,15 @@ class Tasks extends \yii\db\ActiveRecord
 
             if (!$tasks->save()) {
                 if (($tasks->getIsNewRecord())) {
-                    $result[] = array(
+                    $result[] = [
                         "status" => "error",
                         "message" => "Ошибка добавления задачи " . (int) $task->id
-                    );
+                    ];
                 } else {
-                    $result[] = array(
+                    $result[] = [
                         "status" => "error",
                         "message" => "Ошибка обновления задачи " . (int) $task->id
-                    );
+                    ];
                 }
             }
 
@@ -220,8 +220,8 @@ class Tasks extends \yii\db\ActiveRecord
             $users      = BcUsers::findOne(["bc_user_id" => (int) $task->{"responsible-party-id"}]);
 
             if ($taskUsers && $users) {
-                $taskUsers->tasks_id    = $tasks->id;
                 $taskUsers->bc_users_id = $users->id;
+                $taskUsers->tasks_id    = $tasks->id;
                 $taskUsers->save();
             }
 
@@ -233,14 +233,47 @@ class Tasks extends \yii\db\ActiveRecord
 
     /*
      * Деактивирует задачи
+     * @param $project_id integer ID Проекта
+     * @param $tasks_id integer | array ID Задач
      * */
-    public function deactivateTasks($id)
+    public function deactivateTasks($project_id, $tasks_id = [])
     {
-        $tasks = $this->findAll(["project_id" => $id]);
+        $filter = empty($tasks_id) ? ["status" => 1, "project_id" => $project_id] : ["status" => 1, "id" => $tasks_id];
+        $tasks  = $this->findAll($filter);
 
         foreach ($tasks as $task) {
             $task->status = 0;
             $task->save();
         }
+    }
+
+    /*
+     * Принимает ID обновленных задач и возвращает массив
+     * не затронутых задач для деактивации
+     *
+     * @param $project_id integer ID проекта
+     * @param $tasks_id array ID обновленных задач
+     * @return array
+     * */
+    public function getInactiveTasks($project_id, $tasks_id = [])
+    {
+        if (empty($tasks_id)) {
+            return false;
+        }
+
+        $result = [];
+        $db     = new \yii\db\Query();
+
+        $tasks = $db->select("id")
+                        ->from(Tasks::tableName())
+                        ->where(["project_id" => $project_id])
+                        ->andWhere(["not in", "bc_task_id", $tasks_id])
+                        ->all();
+
+        foreach ($tasks as $task) {
+            $result[] = $task["id"];
+        }
+
+        return $result;
     }
 }

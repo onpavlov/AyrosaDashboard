@@ -24,7 +24,7 @@ class ToolsController extends \yii\web\Controller
     public function init()
     {
         if (!Yii::$app->user->isGuest) {
-            $email    = Yii::$app->user->identity->email;
+            $email          = Yii::$app->user->identity->email;
             $this->avatar   = BcUsers::findOne(["bc_email" => $email])->bc_avatar;
         }
     }
@@ -175,19 +175,22 @@ class ToolsController extends \yii\web\Controller
 
     /*
      * Выбирает задачи соответствующие проекту и записывает в таблицу tasks
+     * @return array
      * */
 
     private function updateTask($project_id)
     {
-        $tasks  = new Tasks();
-        $result = array();
+        $tasks      = new Tasks();
+        $result     = [];
+        $updated    = [];
 
         $project = Projects::findOne($project_id);
         $typesXml = $this->getTaskType($project->bc_project_id);
         
+        /* Деактивируем удаленные задачи */
         if (!$typesXml) {
-            $project->deactivateProject($project_id);
-            $tasks->deactivateTasks($project_id);
+            $project->deactivateProject($project_id["id"]);
+            $tasks->deactivateTasks($project_id["id"]);
             return;
         }
 
@@ -196,15 +199,23 @@ class ToolsController extends \yii\web\Controller
             $tasksXml   = $this->getTasks($typeId);
 
             foreach ($tasksXml->{"todo-item"} as $task) {
-                $result = array_merge($result, $tasks->saveTask($task, $type, $project));
+                $result     = array_merge($result, $tasks->saveTask($task, $type, $project));
+                $updated[]  = (int) $task->id;
             }
         }
 
+        /* Деактивируем удаленные задачи */
+        $inactiveTasks = $tasks->getInactiveTasks($project_id["id"], $updated);
+
+        if (!empty($inactiveTasks)) {
+            $tasks->deactivateTasks($project_id["id"], $inactiveTasks);
+        }
+
         if (empty($result)) {
-            $result[] = array(
+            $result[] = [
                 "status" => "success",
                 "message" => "Задачи проекта " . $project->project_name . " успешно обновлены!"
-            );
+            ];
         }
 
         return $result;
