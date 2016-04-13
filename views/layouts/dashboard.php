@@ -56,7 +56,9 @@ AppAsset::register($this);
                     $leftMenuItems[] = ['label' => 'Мои задачи', 'url' => ['/task/mytasks']];
                 }
 
-                $leftMenuItems[] = ['label' => 'Все задачи', 'url' => ['/task/index']];
+                if (Yii::$app->user->can("updatePriority")) {
+                    $leftMenuItems[] = ['label' => 'Все задачи', 'url' => ['/task/index']];
+                }
 
                 if (Yii::$app->user->can("getTools")) {
                     $leftMenuItems[] = ['label' => 'Инструменты', 'url' => ['/tools/index']];

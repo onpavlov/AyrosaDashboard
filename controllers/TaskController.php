@@ -43,8 +43,8 @@ class TaskController extends \yii\web\Controller
 
     public function actionIndex()
     {
-        if (!Yii::$app->user->can("seeTasks")) {
-            return $this->redirect("/login");
+        if (!Yii::$app->user->can("updatePriority")) {
+            return $this->redirect("/mytasks");
         }
 
         $tasks      = new Tasks();
@@ -68,7 +68,7 @@ class TaskController extends \yii\web\Controller
     public function actionMytasks()
     {
         if (Yii::$app->user->isGuest) {
-            return $this->redirect("/login");
+            return $this->redirect("/mytasks");
         }
 
         $tasks      = new Tasks();

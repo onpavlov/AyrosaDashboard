@@ -100,10 +100,10 @@ class Tasks extends \yii\db\ActiveRecord
      */
     public function getTasks($filter = [])
     {
-        $tag1 = (isset($filter["user"])) ? "user" . $filter["user"] : "user0";
-        $tag2 = (isset($filter["project_id"])) ? "project" . $filter["project_id"] : "project0";
+//        $tag1 = (isset($filter["user"])) ? "user" . $filter["user"] : "user0";
+//        $tag2 = (isset($filter["project_id"])) ? "project" . $filter["project_id"] : "project0";
 
-        if (!$tasks = Yii::$app->cache->get($tag1.$tag2)) {
+//        if (!$tasks = Yii::$app->cache->get($tag1.$tag2)) {
             if (isset($filter["project_id"]) && isset($filter["user"]) && $filter["project_id"] > 0 && $filter["user"] > 0) {
                 $user = BcUsers::findOne($filter["user"]);
                 $tasks = $user->getTasks()->where(["project_id" => $filter["project_id"]])->andWhere(["status" => 1])->orderBy("sort")->all();
@@ -115,8 +115,8 @@ class Tasks extends \yii\db\ActiveRecord
                 $tasks = Tasks::find()->where(["status" => 1])->orderBy("sort")->all();
             }
 
-            Yii::$app->cache->set($tag1.$tag2, $tasks, 100);
-        }
+//            Yii::$app->cache->set($tag1.$tag2, $tasks, 100);
+//        }
 
         $arTasks = [
             "high" => [],
