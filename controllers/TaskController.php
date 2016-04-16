@@ -68,7 +68,7 @@ class TaskController extends \yii\web\Controller
     public function actionMytasks()
     {
         if (Yii::$app->user->isGuest) {
-            return $this->redirect("/mytasks");
+            return $this->redirect("/login");
         }
 
         $tasks      = new Tasks();
