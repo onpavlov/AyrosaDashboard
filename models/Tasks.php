@@ -216,6 +216,7 @@ class Tasks extends \yii\db\ActiveRecord
                 }
             }
 
+            /* Привязываем пользователя к задаче */
             $taskUsers  = (TasksBcUsers::findOne(["tasks_id" => $tasks->id])) ? TasksBcUsers::findOne(["tasks_id" => $tasks->id]) : new TasksBcUsers();
             $users      = BcUsers::findOne(["bc_user_id" => (int) $task->{"responsible-party-id"}]);
 
@@ -223,6 +224,8 @@ class Tasks extends \yii\db\ActiveRecord
                 $taskUsers->bc_users_id = $users->id;
                 $taskUsers->tasks_id    = $tasks->id;
                 $taskUsers->save();
+            } elseif ($taskUsers && !$users) {
+                $taskUsers->delete();
             }
 
             unset($tasks);
