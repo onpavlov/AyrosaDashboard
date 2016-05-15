@@ -29,5 +29,6 @@ phpunit.phar
 rbac
 /config/db.php
 /config/params.php
+/config/web.php
 requirements.php
 /web/index.php
