@@ -18,8 +18,8 @@ class ToolsController extends \yii\web\Controller
     const ACTION_ITEMS      = "todo_items.xml";
 
     public $layout  = "dashboard";
-    private $result = array();
     public $avatar  = "/images/avatar.gif";
+    private $result = [];
 
     public function init()
     {
