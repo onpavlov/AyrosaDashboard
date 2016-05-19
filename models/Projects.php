@@ -106,14 +106,7 @@ class Projects extends \yii\db\ActiveRecord
 
             unset($projects);
         }
-
-        if (empty($result)) {
-            $result[] = [
-                "status" => "success",
-                "message" => "Данные проектов успешно обновлены!"
-            ];
-        }
-
+        
         return $result;
     }
 

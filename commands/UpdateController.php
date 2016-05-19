@@ -7,8 +7,9 @@ use yii\console\Controller;
 use app\models\Projects;
 use app\models\Tasks;
 use app\components\Curl;
+use app\models\UpdateInfo;
 
-/*
+/**
  * Controller for update tasks by crontab
  * */
 
@@ -18,39 +19,47 @@ class UpdateController extends Controller
     const ACTION_TODO       = 'todo_lists.xml';
     const ACTION_ITEMS      = 'todo_items.xml';
     const LOG_PATH          = '/logs/';
+    const STATUS_UPDATING   = 'updating';
+    const STATUS_COMPLETE   = 'complete';
 
     private $logPath;
     private $curDate;
 
-    /*
+    /**
      * This command running update tasks
      * */
 
     public function actionRun()
     {
-        $this->logPath = Yii::$app->basePath . self::LOG_PATH;
         $timestamp = time();
-        $this->curDate = date('Y-m-d', $timestamp);
-        $time = date('H:i:s', $timestamp);
-        $this->writeLog($this->curDate . " " . $time . "\n");
+        $this->curDate = Yii::$app->formatter->asDatetime($timestamp, 'php:Y-m-d');
+        $time = Yii::$app->formatter->asDatetime($timestamp, 'php:H:i:s');
+        $this->logPath = Yii::$app->basePath . self::LOG_PATH;
+        $this->writeLog($this->curDate . " " . $time);
+
+        /* Записываем текущую дату как дату последнего обновления */
+        $updInfo = new UpdateInfo();
+        $updInfo->last_update = Yii::$app->formatter->asDatetime(time(), 'php:Y-m-d H:i:s');
+        $updInfo->status = self::STATUS_UPDATING;
+        $updInfo->save();
 
         $projects = new Projects();
         $this->updateProjects();
         $arProjects = $projects->getProjectsIds();
 
-        $this->writeLog("\nОбновление задач:");
-
         foreach ($arProjects as $project) {
-            $result = $this->updateTask($project);
-
-            if (!empty($result)) {
-                foreach ($result as $item) {
-                    $this->writeLog($item['message']);
-                }
-            }
+            $this->updateTask($project);
         }
 
-        $this->writeLog("\nОбщее время обновления:" . date('H:i:s', time() - $timestamp));
+        if (Projects::find()->count() > 50) {
+            Projects::find()->one()->delete();
+        }
+
+        $updInfo->status = self::STATUS_COMPLETE;
+        $updInfo->save();
+
+        $this->writeLog("Tasks were updated " . Yii::$app->formatter->asRelativeTime(time(), $timestamp));
+        $this->writeLog("=============================================");
     }
 
     /*
@@ -58,15 +67,11 @@ class UpdateController extends Controller
      * */
     private function updateProjects()
     {
-        $this->writeLog('Обновление проектов:');
-
         $projects = new Projects();
         $result = $projects->updateProjects($this->getProjects());
 
         if (!empty($result)) {
-            foreach ($result as $item) {
-                $this->writeLog($item['message']);
-            }
+            $this->writeLog(print_r($result, true));
         }
     }
 
@@ -78,7 +83,7 @@ class UpdateController extends Controller
     private function updateTask($project_id)
     {
         $tasks      = new Tasks();
-        $result     = [];
+        $errors     = [];
         $updated    = [];
 
         $project = Projects::findOne($project_id);
@@ -96,7 +101,7 @@ class UpdateController extends Controller
             $tasksXml   = $this->getTasks($typeId);
 
             foreach ($tasksXml->{"todo-item"} as $task) {
-                $result     = array_merge($result, $tasks->saveTask($task, $type, $project));
+                $errors     = array_merge($errors, $tasks->saveTask($task, $type, $project));
                 $updated[]  = (int) $task->id;
             }
         }
@@ -108,14 +113,9 @@ class UpdateController extends Controller
             $tasks->deactivateTasks($project_id["id"], $inactiveTasks);
         }
 
-        if (empty($result)) {
-            $result[] = [
-                "status" => "success",
-                "message" => "Задачи проекта " . $project->project_name . " успешно обновлены!"
-            ];
+        if (!empty($errors)) {
+            $this->writeLog(print_r($errors, true));
         }
-
-        return $result;
     }
 
     /*

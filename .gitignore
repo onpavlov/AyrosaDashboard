@@ -32,3 +32,4 @@ rbac
 /config/web.php
 requirements.php
 /web/index.php
+/logs

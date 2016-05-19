@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\UpdateInfo;
 use Yii;
 use yii\base\Exception;
 use yii\filters\AccessControl;
@@ -16,6 +17,8 @@ class ToolsController extends \yii\web\Controller
     const ACTION_PEOPLE     = "people.xml";
     const ACTION_TODO       = "todo_lists.xml";
     const ACTION_ITEMS      = "todo_items.xml";
+    const STATUS_UPDATING   = 'updating';
+    const STATUS_COMPLETE   = 'complete';
 
     public $layout  = "dashboard";
     public $avatar  = "/images/avatar.gif";
@@ -52,7 +55,11 @@ class ToolsController extends \yii\web\Controller
             throw new \yii\web\HttpException(404, 'Запрашиваемая страница не найдена.');
         }
 
-        return $this->render('index');
+        $updInfo = new UpdateInfo();
+        $date = $updInfo->find()->orderBy(['id' => SORT_DESC])->one();
+        $status = ($date->status == self::STATUS_UPDATING) ? 'В процессе' : 'Завершено';
+
+        return $this->render('index', ['date' => $date->last_update, 'status' => $status]);
     }
 
     /*
@@ -93,8 +100,14 @@ class ToolsController extends \yii\web\Controller
             throw new \yii\web\HttpException(404, 'Запрашиваемая страница не найдена.');
         }
 
-        $projects = new Projects();
+        $projects   = new Projects();
+        $updInfo    = new UpdateInfo();
         $projects->updateProjects($this->getProjects());
+        
+        /* Записываем текущую дату и время как дату последнего обновления */
+        $updInfo->last_update = Yii::$app->formatter->asDatetime(time(), 'php:Y-m-d H:i:s');
+        $updInfo->status = self::STATUS_COMPLETE;
+        $updInfo->save();
 
         echo json_encode($projects->getProjectsIds());
     }
@@ -187,7 +200,7 @@ class ToolsController extends \yii\web\Controller
         $project = Projects::findOne($project_id);
         $typesXml = $this->getTaskType($project->bc_project_id);
         
-        /* Деактивируем удаленные задачи */
+        /* Деактивируем удаленные задачи (когда вернулась пустая xml) */
         if (!$typesXml) {
             $project->deactivateProject($project_id["id"]);
             $tasks->deactivateTasks($project_id["id"]);
