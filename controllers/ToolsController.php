@@ -55,11 +55,18 @@ class ToolsController extends \yii\web\Controller
             throw new \yii\web\HttpException(404, 'Запрашиваемая страница не найдена.');
         }
 
+        $params = [];
         $updInfo = new UpdateInfo();
         $date = $updInfo->find()->orderBy(['id' => SORT_DESC])->one();
-        $status = ($date->status == self::STATUS_UPDATING) ? 'В процессе' : 'Завершено';
+        if ($date) {
+            $status = ($date->status == self::STATUS_UPDATING) ? 'В процессе' : 'Завершено';
+            $params = [
+                'date' => $date->last_update,
+                'status' => $status
+            ];
+        }
 
-        return $this->render('index', ['date' => $date->last_update, 'status' => $status]);
+        return $this->render('index', $params);
     }
 
     /*
