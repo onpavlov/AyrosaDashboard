@@ -43,16 +43,20 @@ class UpdateController extends Controller
         $updInfo->status = self::STATUS_UPDATING;
         $updInfo->save();
 
-        $projects = new Projects();
-        $this->updateProjects();
-        $arProjects = $projects->getProjectsIds();
+        try {
+            $projects = new Projects();
+            $this->updateProjects();
+            $arProjects = $projects->getProjectsIds();
 
-        foreach ($arProjects as $project) {
-            $this->updateTask($project);
-        }
+            foreach ($arProjects as $project) {
+                $this->updateTask($project);
+            }
 
-        if (Projects::find()->count() > 50) {
-            Projects::find()->one()->delete();
+            if (Projects::find()->count() > 50) {
+                Projects::find()->one()->delete();
+            }
+        } catch (yii\base\Exception $e) {
+            $this->writeLog($e->getMessage());
         }
 
         $updInfo->status = self::STATUS_COMPLETE;
