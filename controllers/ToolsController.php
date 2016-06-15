@@ -3,20 +3,15 @@
 namespace app\controllers;
 
 use app\models\UpdateInfo;
-use Yii;
-use yii\base\Exception;
+use yii;
 use yii\filters\AccessControl;
 use app\models\Tasks;
 use app\models\BcUsers;
 use app\models\Projects;
-use app\components\Curl;
+use app\components\XmlHelper;
 
 class ToolsController extends \yii\web\Controller
 {
-    const ACTION_PROJECTS   = "projects.xml";
-    const ACTION_PEOPLE     = "people.xml";
-    const ACTION_TODO       = "todo_lists.xml";
-    const ACTION_ITEMS      = "todo_items.xml";
     const STATUS_UPDATING   = 'updating';
     const STATUS_COMPLETE   = 'complete';
 
@@ -85,8 +80,7 @@ class ToolsController extends \yii\web\Controller
         switch($action) {
             case "usersUpdate":
                 $users = new BcUsers();
-
-                $this->result = $users->updateUsers($this->getPeople());
+                $this->result = $users->updateUsers(XmlHelper::getPeople());
                 break;
 
             case "taskUpdate":
@@ -109,7 +103,7 @@ class ToolsController extends \yii\web\Controller
 
         $projects   = new Projects();
         $updInfo    = new UpdateInfo();
-        $projects->updateProjects($this->getProjects());
+        $projects->updateProjects(XmlHelper::getProjects());
         
         /* Записываем текущую дату и время как дату последнего обновления */
         $updInfo->last_update = Yii::$app->formatter->asDatetime(time(), 'php:Y-m-d H:i:s');
@@ -120,103 +114,31 @@ class ToolsController extends \yii\web\Controller
     }
 
     /*
-     * Получает xml данные при помощи CURL
-     * @return string
-     * */
-    private function getXML($url)
-    {
-        $headers = array(
-            "Accept: application/xml",
-            "Content-Type: application/xml"
-        );
-
-        $config = array(
-            "ssl_verifypeer" => 0,
-            "ssl_verifyhost" => 0,
-            "header" => 0,
-            "timeout" => 30,
-            "httpheader" => $headers,
-            "returntransfer" => true,
-            "useragent" => "Ayrosa (4pavlovon@gmail.com)",
-            "userpwd" => Yii::$app->params["BClogin"] . ":" . Yii::$app->params["BCpassword"]
-        );
-
-        $curl = new Curl($url, $config);
-
-        return $curl->execute();
-    }
-
-    /*
-     * Получает xml данные со списком всех пользователей и возвращает объект для извлечения параметров
-     * @return SimpleXMLElement object
-     * */
-    private function getPeople()
-    {
-        $xml = new \SimpleXMLElement($this->getXML(Yii::$app->params["BChost"] . self::ACTION_PEOPLE));
-        return $xml;
-    }
-
-    /*
-     * Получает xml данные со списком всех проектов и возвращает объект для извлечения параметров
-     * @return SimpleXMLElement object
-     * */
-    private function getProjects()
-    {
-        $xml = new \SimpleXMLElement($this->getXML(Yii::$app->params["BChost"] . self::ACTION_PROJECTS));
-        return $xml;
-    }
-
-    /*
-     * Получает xml данные со списком типов задач и возвращает объект для извлечения параметров
-     * @param integer $id ID проекта
-     * @return SimpleXMLElement object
-     * */
-    private function getTaskType($id)
-    {
-        try {
-            $result = new \SimpleXMLElement($this->getXML(Yii::$app->params["BChost"] . "projects/" . $id . "/" . self::ACTION_TODO));
-        } catch (\Exception $e) {
-            $result = false;
-        }
-
-        return $result;
-    }
-
-    /*
-     * Получает xml данные со списком задач и возвращает объект для извлечения параметров
-     * @param integer $id ID типа задачи
-     * @return SimpleXMLElement object
-     * */
-    private function getTasks($id)
-    {
-        $xml = new \SimpleXMLElement($this->getXML(Yii::$app->params["BChost"] . "todo_lists/" . $id . "/" . self::ACTION_ITEMS));
-        return $xml;
-    }
-
-    /*
      * Выбирает задачи соответствующие проекту и записывает в таблицу tasks
+     * 
+     * @param integer $projectID
      * @return array
      * */
 
-    private function updateTask($project_id)
+    private function updateTask($projectID)
     {
         $tasks      = new Tasks();
         $result     = [];
         $updated    = [];
 
-        $project = Projects::findOne($project_id);
-        $typesXml = $this->getTaskType($project->bc_project_id);
+        $project = Projects::findOne($projectID);
+        $typesXml = XmlHelper::getTaskType($project->bc_project_id);
         
         /* Деактивируем удаленные задачи (когда вернулась пустая xml) */
         if (!$typesXml) {
-            $project->deactivateProject($project_id["id"]);
-            $tasks->deactivateTasks($project_id["id"]);
+            $project->deactivateProject($projectID["id"]);
+            $tasks->deactivateTasks($projectID["id"]);
             return;
         }
 
         foreach ($typesXml->{"todo-list"} as $type) {
             $typeId     = (int) $type->id;
-            $tasksXml   = $this->getTasks($typeId);
+            $tasksXml   = XmlHelper::getTasks($typeId);
 
             foreach ($tasksXml->{"todo-item"} as $task) {
                 $result     = array_merge($result, $tasks->saveTask($task, $type, $project));
@@ -225,10 +147,10 @@ class ToolsController extends \yii\web\Controller
         }
 
         /* Деактивируем удаленные задачи */
-        $inactiveTasks = $tasks->getInactiveTasks($project_id["id"], $updated);
+        $inactiveTasks = $tasks->getInactiveTasks($projectID["id"], $updated);
 
         if (!empty($inactiveTasks)) {
-            $tasks->deactivateTasks($project_id["id"], $inactiveTasks);
+            $tasks->deactivateTasks($projectID["id"], $inactiveTasks);
         }
 
         if (empty($result)) {

@@ -84,6 +84,8 @@ class BcUsers extends \yii\db\ActiveRecord
 
     /*
      * Выбирает необходимые данные из xml объекта и записывает в таблицу bc_users
+     *
+     * @param SiteXMLElement $xmlObject
      * @return array
      * */
     public function updateUsers(\SimpleXMLElement $xmlObject)

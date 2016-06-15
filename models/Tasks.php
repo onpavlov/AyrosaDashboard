@@ -165,10 +165,10 @@ class Tasks extends \yii\db\ActiveRecord
 
     /*
      * Сохраняет / обновляет задачу
+     *
      * @param object SimpleXmlElement $task
      * @param object SimpleXmlElement $type
      * @param object Project $project
-     *
      * @return array
      * */
     public function saveTask($task, $type, $project)
@@ -192,7 +192,7 @@ class Tasks extends \yii\db\ActiveRecord
 
             $tasks->project_id      = $project->id;
             $tasks->task_name       = (string) $task->content;
-            $tasks->priority        = ($tasks->getIsNewRecord()) ? "low" : $tasks->priority;
+            $tasks->priority        = ($tasks->getIsNewRecord()) ? "middle" : $tasks->priority;
             $tasks->date            = date("Y-m-d h:i:s", strtotime($date));
             $tasks->bc_task_id      = (int) $task->id;
             $tasks->bc_type_id      = (int) $type->id;

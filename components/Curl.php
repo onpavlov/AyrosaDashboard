@@ -6,16 +6,16 @@ use yii\base\Object;
 
 class Curl extends Object
 {
-    public $ssl_verifypeer;
-    public $ssl_verifyhost;
-    public $header;
-    public $timeout;
-    public $httpheader;
-    public $returntransfer;
-    public $useragent;
-    public $userpwd;
-    public $url;
-    public $ch;
+    private $ssl_verifypeer;
+    private $ssl_verifyhost;
+    private $header;
+    private $timeout;
+    private $httpheader;
+    private $returntransfer;
+    private $useragent;
+    private $userpwd;
+    private $url;
+    private $ch;
 
     public function __construct($url, $config = [])
     {
