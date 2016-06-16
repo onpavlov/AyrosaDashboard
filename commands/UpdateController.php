@@ -21,12 +21,6 @@ class UpdateController extends Controller
     private $logPath;
     private $curDate;
 
-    public function init()
-    {
-        parent::init();
-        Yii::$classMap['app\components\XmlHelper'] = '@app/components/XMLHelper.php';
-    }
-
     /**
      * This command running update tasks
      * */
