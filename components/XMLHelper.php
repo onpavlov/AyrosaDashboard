@@ -16,7 +16,7 @@ class XmlHelper extends Object
      * Получает xml данные при помощи CURL
      * @return string
      * */
-    public static function getXML($url)
+    public function getXML($url)
     {
         $headers = array(
             "Accept: application/xml",
@@ -43,10 +43,10 @@ class XmlHelper extends Object
      * Получает xml данные со списком всех пользователей и возвращает объект для извлечения параметров
      * @return SimpleXMLElement object
      * */
-    public static function getPeople()
+    public function getPeople()
     {
         $url = Yii::$app->params["BChost"] . self::ACTION_PEOPLE;
-        $xml = new \SimpleXMLElement(self::getXML($url));
+        $xml = new \SimpleXMLElement($this->getXML($url));
         return $xml;
     }
 
@@ -54,10 +54,10 @@ class XmlHelper extends Object
      * Получает xml данные со списком всех проектов и возвращает объект для извлечения параметров
      * @return SimpleXMLElement object
      * */
-    public static function getProjects()
+    public function getProjects()
     {
         $url = Yii::$app->params["BChost"] . self::ACTION_PROJECTS;
-        $xml = new \SimpleXMLElement(self::getXML($url));
+        $xml = new \SimpleXMLElement($this->getXML($url));
         return $xml;
     }
 
@@ -66,11 +66,11 @@ class XmlHelper extends Object
      * @param integer $id ID проекта
      * @return SimpleXMLElement object
      * */
-    public static function getTaskType($id)
+    public function getTaskType($id)
     {
         try {
             $url = Yii::$app->params["BChost"] . "projects/" . $id . "/" . self::ACTION_TODO;
-            $result = new \SimpleXMLElement(self::getXML($url));
+            $result = new \SimpleXMLElement($this->getXML($url));
         } catch (\Exception $e) {
             $result = false;
         }
@@ -83,10 +83,10 @@ class XmlHelper extends Object
      * @param integer $id ID типа задачи
      * @return SimpleXMLElement object
      * */
-    public static function getTasks($id)
+    public function getTasks($id)
     {
         $url = Yii::$app->params["BChost"] . "todo_lists/" . $id . "/" . self::ACTION_ITEMS;
-        $xml = new \SimpleXMLElement(self::getXML($url));
+        $xml = new \SimpleXMLElement($this->getXML($url));
         return $xml;
     }
 }

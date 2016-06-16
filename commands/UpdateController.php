@@ -6,7 +6,6 @@ use yii;
 use yii\console\Controller;
 use app\models\Projects;
 use app\models\Tasks;
-use app\components\XmlHelper;
 use app\models\UpdateInfo;
 
 /**
@@ -69,7 +68,7 @@ class UpdateController extends Controller
     private function updateProjects()
     {
         $projects = new Projects();
-        $result = $projects->updateProjects(XmlHelper::getProjects());
+        $result = $projects->updateProjects(Yii::$app->xmlhelper->getProjects());
 
         if (!empty($result)) {
             $this->writeLog(print_r($result, true));
@@ -88,7 +87,7 @@ class UpdateController extends Controller
         $updated    = [];
 
         $project = Projects::findOne($project_id);
-        $typesXml = XmlHelper::getTaskType($project->bc_project_id);
+        $typesXml = Yii::$app->xmlhelper->getTaskType($project->bc_project_id);
 
         /* Деактивируем удаленные задачи */
         if (!$typesXml) {
@@ -99,7 +98,7 @@ class UpdateController extends Controller
 
         foreach ($typesXml->{"todo-list"} as $type) {
             $typeId     = (int) $type->id;
-            $tasksXml   = XmlHelper::getTasks($typeId);
+            $tasksXml   = Yii::$app->xmlhelper->getTasks($typeId);
 
             foreach ($tasksXml->{"todo-item"} as $task) {
                 $errors     = array_merge($errors, $tasks->saveTask($task, $type, $project));
