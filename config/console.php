@@ -26,6 +26,9 @@ $config = [
         'authManager' => [
             'class' => 'yii\rbac\PhpManager',
         ],
+        'xmlhelper' => [
+            'class' => 'app\components\XmlHelper'
+        ]
     ],
     'params' => $params,
     /*

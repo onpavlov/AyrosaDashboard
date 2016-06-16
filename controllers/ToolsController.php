@@ -8,7 +8,6 @@ use yii\filters\AccessControl;
 use app\models\Tasks;
 use app\models\BcUsers;
 use app\models\Projects;
-use app\components\XmlHelper;
 
 class ToolsController extends \yii\web\Controller
 {
@@ -80,7 +79,7 @@ class ToolsController extends \yii\web\Controller
         switch($action) {
             case "usersUpdate":
                 $users = new BcUsers();
-                $this->result = $users->updateUsers(XmlHelper::getPeople());
+                $this->result = $users->updateUsers(Yii::$app->xmlhelper->getPeople());
                 break;
 
             case "taskUpdate":
@@ -103,7 +102,7 @@ class ToolsController extends \yii\web\Controller
 
         $projects   = new Projects();
         $updInfo    = new UpdateInfo();
-        $projects->updateProjects(XmlHelper::getProjects());
+        $projects->updateProjects(Yii::$app->xmlhelper->getProjects());
         
         /* Записываем текущую дату и время как дату последнего обновления */
         $updInfo->last_update = Yii::$app->formatter->asDatetime(time(), 'php:Y-m-d H:i:s');
@@ -127,7 +126,7 @@ class ToolsController extends \yii\web\Controller
         $updated    = [];
 
         $project = Projects::findOne($projectID);
-        $typesXml = XmlHelper::getTaskType($project->bc_project_id);
+        $typesXml = Yii::$app->xmlhelper->getTaskType($project->bc_project_id);
         
         /* Деактивируем удаленные задачи (когда вернулась пустая xml) */
         if (!$typesXml) {
@@ -138,7 +137,7 @@ class ToolsController extends \yii\web\Controller
 
         foreach ($typesXml->{"todo-list"} as $type) {
             $typeId     = (int) $type->id;
-            $tasksXml   = XmlHelper::getTasks($typeId);
+            $tasksXml   = Yii::$app->xmlhelper->getTasks($typeId);
 
             foreach ($tasksXml->{"todo-item"} as $task) {
                 $result     = array_merge($result, $tasks->saveTask($task, $type, $project));

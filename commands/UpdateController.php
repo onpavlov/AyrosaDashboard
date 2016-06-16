@@ -6,7 +6,6 @@ use yii;
 use yii\console\Controller;
 use app\models\Projects;
 use app\models\Tasks;
-use app\components\Curl;
 use app\models\UpdateInfo;
 
 /**
@@ -15,15 +14,18 @@ use app\models\UpdateInfo;
 
 class UpdateController extends Controller
 {
-    const ACTION_PROJECTS   = 'projects.xml';
-    const ACTION_TODO       = 'todo_lists.xml';
-    const ACTION_ITEMS      = 'todo_items.xml';
     const LOG_PATH          = '/logs/';
     const STATUS_UPDATING   = 'updating';
     const STATUS_COMPLETE   = 'complete';
 
     private $logPath;
     private $curDate;
+
+    public function init()
+    {
+        parent::init();
+        Yii::$classMap['app\components\XmlHelper'] = '@app/components/XMLHelper.php';
+    }
 
     /**
      * This command running update tasks
@@ -72,7 +74,7 @@ class UpdateController extends Controller
     private function updateProjects()
     {
         $projects = new Projects();
-        $result = $projects->updateProjects($this->getProjects());
+        $result = $projects->updateProjects(Yii::$app->xmlhelper->getProjects());
 
         if (!empty($result)) {
             $this->writeLog(print_r($result, true));
@@ -91,7 +93,7 @@ class UpdateController extends Controller
         $updated    = [];
 
         $project = Projects::findOne($project_id);
-        $typesXml = $this->getTaskType($project->bc_project_id);
+        $typesXml = Yii::$app->xmlhelper->getTaskType($project->bc_project_id);
 
         /* Деактивируем удаленные задачи */
         if (!$typesXml) {
@@ -102,7 +104,7 @@ class UpdateController extends Controller
 
         foreach ($typesXml->{"todo-list"} as $type) {
             $typeId     = (int) $type->id;
-            $tasksXml   = $this->getTasks($typeId);
+            $tasksXml   = Yii::$app->xmlhelper->getTasks($typeId);
 
             foreach ($tasksXml->{"todo-item"} as $task) {
                 $errors     = array_merge($errors, $tasks->saveTask($task, $type, $project));
@@ -120,70 +122,6 @@ class UpdateController extends Controller
         if (!empty($errors)) {
             $this->writeLog(print_r($errors, true));
         }
-    }
-
-    /*
-     * Получает xml данные при помощи CURL
-     * @return string
-     * */
-    private function getXML($url)
-    {
-        $headers = array(
-            "Accept: application/xml",
-            "Content-Type: application/xml"
-        );
-
-        $config = array(
-            "ssl_verifypeer" => 0,
-            "ssl_verifyhost" => 0,
-            "header" => 0,
-            "timeout" => 30,
-            "httpheader" => $headers,
-            "returntransfer" => true,
-            "useragent" => "Ayrosa (4pavlovon@gmail.com)",
-            "userpwd" => Yii::$app->params["BClogin"] . ":" . Yii::$app->params["BCpassword"]
-        );
-
-        $curl = new Curl($url, $config);
-
-        return $curl->execute();
-    }
-
-    /*
-     * Получает xml данные со списком задач и возвращает объект для извлечения параметров
-     * @param integer $id ID типа задачи
-     * @return SimpleXMLElement object
-     * */
-    private function getTasks($id)
-    {
-        $xml = new \SimpleXMLElement($this->getXML(Yii::$app->params["BChost"] . "todo_lists/" . $id . "/" . self::ACTION_ITEMS));
-        return $xml;
-    }
-
-    /*
-     * Получает xml данные со списком типов задач и возвращает объект для извлечения параметров
-     * @param integer $id ID проекта
-     * @return SimpleXMLElement object
-     * */
-    private function getTaskType($id)
-    {
-        try {
-            $result = new \SimpleXMLElement($this->getXML(Yii::$app->params["BChost"] . "projects/" . $id . "/" . self::ACTION_TODO));
-        } catch (\Exception $e) {
-            $result = false;
-        }
-
-        return $result;
-    }
-
-    /*
-     * Получает xml данные со списком всех проектов и возвращает объект для извлечения параметров
-     * @return SimpleXMLElement object
-     * */
-    private function getProjects()
-    {
-        $xml = new \SimpleXMLElement($this->getXML(Yii::$app->params["BChost"] . self::ACTION_PROJECTS));
-        return $xml;
     }
 
     /*
