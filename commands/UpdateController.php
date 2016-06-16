@@ -24,7 +24,7 @@ class UpdateController extends Controller
     public function init()
     {
         parent::init();
-        Yii::$classMap['app\components\XmlHelper'] = '@app/components/XmlHelper.php';
+        Yii::$classMap['app\components\XmlHelper'] = '@app/components/XMLHelper.php';
     }
 
     /**
